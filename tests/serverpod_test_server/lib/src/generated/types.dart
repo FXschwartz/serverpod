@@ -957,14 +957,32 @@ class TypesRepository {
     );
   }
 
-  /// Deletes all rows matching the [where] expression.
+  /// Deletes all rows matching the [where] expression and returns the deleted
+  /// rows.
+  ///
+  /// To specify the order of the returned deleted rows use [orderBy] or
+  /// [orderByList] when sorting by multiple columns.
+  ///
+  /// ```dart
+  /// var deletedPersons = await Persons.db.deleteWhere(
+  ///   session,
+  ///   where: (t) => t.age.equals(20),
+  ///   orderBy: (t) => t.name,
+  /// );
+  /// ```
   Future<List<Types>> deleteWhere(
     _i1.Session session, {
     required _i1.WhereExpressionBuilder<TypesTable> where,
+    _i1.OrderByBuilder<TypesTable>? orderBy,
+    bool orderDescending = false,
+    _i1.OrderByListBuilder<TypesTable>? orderByList,
     _i1.Transaction? transaction,
   }) async {
     return session.db.deleteWhere<Types>(
       where: where(Types.t),
+      orderBy: orderBy?.call(Types.t),
+      orderByList: orderByList?.call(Types.t),
+      orderDescending: orderDescending,
       transaction: transaction,
     );
   }

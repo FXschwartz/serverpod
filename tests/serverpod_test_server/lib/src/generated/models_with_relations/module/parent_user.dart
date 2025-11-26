@@ -432,14 +432,32 @@ class ParentUserRepository {
     );
   }
 
-  /// Deletes all rows matching the [where] expression.
+  /// Deletes all rows matching the [where] expression and returns the deleted
+  /// rows.
+  ///
+  /// To specify the order of the returned deleted rows use [orderBy] or
+  /// [orderByList] when sorting by multiple columns.
+  ///
+  /// ```dart
+  /// var deletedPersons = await Persons.db.deleteWhere(
+  ///   session,
+  ///   where: (t) => t.age.equals(20),
+  ///   orderBy: (t) => t.name,
+  /// );
+  /// ```
   Future<List<ParentUser>> deleteWhere(
     _i1.Session session, {
     required _i1.WhereExpressionBuilder<ParentUserTable> where,
+    _i1.OrderByBuilder<ParentUserTable>? orderBy,
+    bool orderDescending = false,
+    _i1.OrderByListBuilder<ParentUserTable>? orderByList,
     _i1.Transaction? transaction,
   }) async {
     return session.db.deleteWhere<ParentUser>(
       where: where(ParentUser.t),
+      orderBy: orderBy?.call(ParentUser.t),
+      orderByList: orderByList?.call(ParentUser.t),
+      orderDescending: orderDescending,
       transaction: transaction,
     );
   }

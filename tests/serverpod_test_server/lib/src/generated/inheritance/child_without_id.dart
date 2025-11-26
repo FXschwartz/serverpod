@@ -461,14 +461,32 @@ class ChildClassWithoutIdRepository {
     );
   }
 
-  /// Deletes all rows matching the [where] expression.
+  /// Deletes all rows matching the [where] expression and returns the deleted
+  /// rows.
+  ///
+  /// To specify the order of the returned deleted rows use [orderBy] or
+  /// [orderByList] when sorting by multiple columns.
+  ///
+  /// ```dart
+  /// var deletedPersons = await Persons.db.deleteWhere(
+  ///   session,
+  ///   where: (t) => t.age.equals(20),
+  ///   orderBy: (t) => t.name,
+  /// );
+  /// ```
   Future<List<ChildClassWithoutId>> deleteWhere(
     _i2.Session session, {
     required _i2.WhereExpressionBuilder<ChildClassWithoutIdTable> where,
+    _i2.OrderByBuilder<ChildClassWithoutIdTable>? orderBy,
+    bool orderDescending = false,
+    _i2.OrderByListBuilder<ChildClassWithoutIdTable>? orderByList,
     _i2.Transaction? transaction,
   }) async {
     return session.db.deleteWhere<ChildClassWithoutId>(
       where: where(ChildClassWithoutId.t),
+      orderBy: orderBy?.call(ChildClassWithoutId.t),
+      orderByList: orderByList?.call(ChildClassWithoutId.t),
+      orderDescending: orderDescending,
       transaction: transaction,
     );
   }

@@ -450,14 +450,32 @@ class BigIntDefaultRepository {
     );
   }
 
-  /// Deletes all rows matching the [where] expression.
+  /// Deletes all rows matching the [where] expression and returns the deleted
+  /// rows.
+  ///
+  /// To specify the order of the returned deleted rows use [orderBy] or
+  /// [orderByList] when sorting by multiple columns.
+  ///
+  /// ```dart
+  /// var deletedPersons = await Persons.db.deleteWhere(
+  ///   session,
+  ///   where: (t) => t.age.equals(20),
+  ///   orderBy: (t) => t.name,
+  /// );
+  /// ```
   Future<List<BigIntDefault>> deleteWhere(
     _i1.Session session, {
     required _i1.WhereExpressionBuilder<BigIntDefaultTable> where,
+    _i1.OrderByBuilder<BigIntDefaultTable>? orderBy,
+    bool orderDescending = false,
+    _i1.OrderByListBuilder<BigIntDefaultTable>? orderByList,
     _i1.Transaction? transaction,
   }) async {
     return session.db.deleteWhere<BigIntDefault>(
       where: where(BigIntDefault.t),
+      orderBy: orderBy?.call(BigIntDefault.t),
+      orderByList: orderByList?.call(BigIntDefault.t),
+      orderDescending: orderDescending,
       transaction: transaction,
     );
   }

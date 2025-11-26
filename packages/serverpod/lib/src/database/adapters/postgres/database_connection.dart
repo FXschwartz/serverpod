@@ -418,15 +418,34 @@ class DatabaseConnection {
   Future<List<T>> deleteWhere<T extends TableRow>(
     Session session,
     Expression where, {
+    Column? orderBy,
+    List<Order>? orderByList,
+    bool orderDescending = false,
     Transaction? transaction,
   }) async {
     var table = _getTableOrAssert<T>(session, operation: 'deleteWhere');
 
-    var query = DeleteQueryBuilder(
+    var deleteQuery = DeleteQueryBuilder(
       table: table,
     ).withReturn(Returning.all).withWhere(where).build();
 
-    return await _deserializedMappedQuery(
+    String query;
+    var orders = _resolveOrderBy(orderByList, orderBy, orderDescending);
+
+    if (orders != null && orders.isNotEmpty) {
+      // Wrap in CTE to apply ORDER BY to the returned results
+      var orderByClause = orders
+          .map((o) => o.toString().replaceAll('"${table.tableName}".', ''))
+          .join(', ');
+
+      query =
+          'WITH deleted AS ($deleteQuery) '
+          'SELECT * FROM deleted ORDER BY $orderByClause';
+    } else {
+      query = deleteQuery;
+    }
+
+    return await _deserializedMappedQuery<T>(
       session,
       query,
       table: table,

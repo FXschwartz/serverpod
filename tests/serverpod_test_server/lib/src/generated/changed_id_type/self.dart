@@ -690,14 +690,32 @@ class ChangedIdTypeSelfRepository {
     );
   }
 
-  /// Deletes all rows matching the [where] expression.
+  /// Deletes all rows matching the [where] expression and returns the deleted
+  /// rows.
+  ///
+  /// To specify the order of the returned deleted rows use [orderBy] or
+  /// [orderByList] when sorting by multiple columns.
+  ///
+  /// ```dart
+  /// var deletedPersons = await Persons.db.deleteWhere(
+  ///   session,
+  ///   where: (t) => t.age.equals(20),
+  ///   orderBy: (t) => t.name,
+  /// );
+  /// ```
   Future<List<ChangedIdTypeSelf>> deleteWhere(
     _i1.Session session, {
     required _i1.WhereExpressionBuilder<ChangedIdTypeSelfTable> where,
+    _i1.OrderByBuilder<ChangedIdTypeSelfTable>? orderBy,
+    bool orderDescending = false,
+    _i1.OrderByListBuilder<ChangedIdTypeSelfTable>? orderByList,
     _i1.Transaction? transaction,
   }) async {
     return session.db.deleteWhere<ChangedIdTypeSelf>(
       where: where(ChangedIdTypeSelf.t),
+      orderBy: orderBy?.call(ChangedIdTypeSelf.t),
+      orderByList: orderByList?.call(ChangedIdTypeSelf.t),
+      orderDescending: orderDescending,
       transaction: transaction,
     );
   }

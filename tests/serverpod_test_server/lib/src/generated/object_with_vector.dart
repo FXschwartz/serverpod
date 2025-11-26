@@ -566,14 +566,32 @@ class ObjectWithVectorRepository {
     );
   }
 
-  /// Deletes all rows matching the [where] expression.
+  /// Deletes all rows matching the [where] expression and returns the deleted
+  /// rows.
+  ///
+  /// To specify the order of the returned deleted rows use [orderBy] or
+  /// [orderByList] when sorting by multiple columns.
+  ///
+  /// ```dart
+  /// var deletedPersons = await Persons.db.deleteWhere(
+  ///   session,
+  ///   where: (t) => t.age.equals(20),
+  ///   orderBy: (t) => t.name,
+  /// );
+  /// ```
   Future<List<ObjectWithVector>> deleteWhere(
     _i1.Session session, {
     required _i1.WhereExpressionBuilder<ObjectWithVectorTable> where,
+    _i1.OrderByBuilder<ObjectWithVectorTable>? orderBy,
+    bool orderDescending = false,
+    _i1.OrderByListBuilder<ObjectWithVectorTable>? orderByList,
     _i1.Transaction? transaction,
   }) async {
     return session.db.deleteWhere<ObjectWithVector>(
       where: where(ObjectWithVector.t),
+      orderBy: orderBy?.call(ObjectWithVector.t),
+      orderByList: orderByList?.call(ObjectWithVector.t),
+      orderDescending: orderDescending,
       transaction: transaction,
     );
   }

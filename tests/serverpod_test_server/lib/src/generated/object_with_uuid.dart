@@ -442,14 +442,32 @@ class ObjectWithUuidRepository {
     );
   }
 
-  /// Deletes all rows matching the [where] expression.
+  /// Deletes all rows matching the [where] expression and returns the deleted
+  /// rows.
+  ///
+  /// To specify the order of the returned deleted rows use [orderBy] or
+  /// [orderByList] when sorting by multiple columns.
+  ///
+  /// ```dart
+  /// var deletedPersons = await Persons.db.deleteWhere(
+  ///   session,
+  ///   where: (t) => t.age.equals(20),
+  ///   orderBy: (t) => t.name,
+  /// );
+  /// ```
   Future<List<ObjectWithUuid>> deleteWhere(
     _i1.Session session, {
     required _i1.WhereExpressionBuilder<ObjectWithUuidTable> where,
+    _i1.OrderByBuilder<ObjectWithUuidTable>? orderBy,
+    bool orderDescending = false,
+    _i1.OrderByListBuilder<ObjectWithUuidTable>? orderByList,
     _i1.Transaction? transaction,
   }) async {
     return session.db.deleteWhere<ObjectWithUuid>(
       where: where(ObjectWithUuid.t),
+      orderBy: orderBy?.call(ObjectWithUuid.t),
+      orderByList: orderByList?.call(ObjectWithUuid.t),
+      orderDescending: orderDescending,
       transaction: transaction,
     );
   }

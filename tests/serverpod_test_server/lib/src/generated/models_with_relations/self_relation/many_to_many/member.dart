@@ -566,14 +566,32 @@ class MemberRepository {
     );
   }
 
-  /// Deletes all rows matching the [where] expression.
+  /// Deletes all rows matching the [where] expression and returns the deleted
+  /// rows.
+  ///
+  /// To specify the order of the returned deleted rows use [orderBy] or
+  /// [orderByList] when sorting by multiple columns.
+  ///
+  /// ```dart
+  /// var deletedPersons = await Persons.db.deleteWhere(
+  ///   session,
+  ///   where: (t) => t.age.equals(20),
+  ///   orderBy: (t) => t.name,
+  /// );
+  /// ```
   Future<List<Member>> deleteWhere(
     _i1.Session session, {
     required _i1.WhereExpressionBuilder<MemberTable> where,
+    _i1.OrderByBuilder<MemberTable>? orderBy,
+    bool orderDescending = false,
+    _i1.OrderByListBuilder<MemberTable>? orderByList,
     _i1.Transaction? transaction,
   }) async {
     return session.db.deleteWhere<Member>(
       where: where(Member.t),
+      orderBy: orderBy?.call(Member.t),
+      orderByList: orderByList?.call(Member.t),
+      orderDescending: orderDescending,
       transaction: transaction,
     );
   }

@@ -474,14 +474,32 @@ class LongImplicitIdFieldRepository {
     );
   }
 
-  /// Deletes all rows matching the [where] expression.
+  /// Deletes all rows matching the [where] expression and returns the deleted
+  /// rows.
+  ///
+  /// To specify the order of the returned deleted rows use [orderBy] or
+  /// [orderByList] when sorting by multiple columns.
+  ///
+  /// ```dart
+  /// var deletedPersons = await Persons.db.deleteWhere(
+  ///   session,
+  ///   where: (t) => t.age.equals(20),
+  ///   orderBy: (t) => t.name,
+  /// );
+  /// ```
   Future<List<LongImplicitIdField>> deleteWhere(
     _i1.Session session, {
     required _i1.WhereExpressionBuilder<LongImplicitIdFieldTable> where,
+    _i1.OrderByBuilder<LongImplicitIdFieldTable>? orderBy,
+    bool orderDescending = false,
+    _i1.OrderByListBuilder<LongImplicitIdFieldTable>? orderByList,
     _i1.Transaction? transaction,
   }) async {
     return session.db.deleteWhere<LongImplicitIdField>(
       where: where(LongImplicitIdField.t),
+      orderBy: orderBy?.call(LongImplicitIdField.t),
+      orderByList: orderByList?.call(LongImplicitIdField.t),
+      orderDescending: orderDescending,
       transaction: transaction,
     );
   }

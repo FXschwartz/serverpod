@@ -442,14 +442,32 @@ class UriDefaultRepository {
     );
   }
 
-  /// Deletes all rows matching the [where] expression.
+  /// Deletes all rows matching the [where] expression and returns the deleted
+  /// rows.
+  ///
+  /// To specify the order of the returned deleted rows use [orderBy] or
+  /// [orderByList] when sorting by multiple columns.
+  ///
+  /// ```dart
+  /// var deletedPersons = await Persons.db.deleteWhere(
+  ///   session,
+  ///   where: (t) => t.age.equals(20),
+  ///   orderBy: (t) => t.name,
+  /// );
+  /// ```
   Future<List<UriDefault>> deleteWhere(
     _i1.Session session, {
     required _i1.WhereExpressionBuilder<UriDefaultTable> where,
+    _i1.OrderByBuilder<UriDefaultTable>? orderBy,
+    bool orderDescending = false,
+    _i1.OrderByListBuilder<UriDefaultTable>? orderByList,
     _i1.Transaction? transaction,
   }) async {
     return session.db.deleteWhere<UriDefault>(
       where: where(UriDefault.t),
+      orderBy: orderBy?.call(UriDefault.t),
+      orderByList: orderByList?.call(UriDefault.t),
+      orderDescending: orderDescending,
       transaction: transaction,
     );
   }

@@ -476,14 +476,32 @@ class UserNoteWithALongNameRepository {
     );
   }
 
-  /// Deletes all rows matching the [where] expression.
+  /// Deletes all rows matching the [where] expression and returns the deleted
+  /// rows.
+  ///
+  /// To specify the order of the returned deleted rows use [orderBy] or
+  /// [orderByList] when sorting by multiple columns.
+  ///
+  /// ```dart
+  /// var deletedPersons = await Persons.db.deleteWhere(
+  ///   session,
+  ///   where: (t) => t.age.equals(20),
+  ///   orderBy: (t) => t.name,
+  /// );
+  /// ```
   Future<List<UserNoteWithALongName>> deleteWhere(
     _i1.Session session, {
     required _i1.WhereExpressionBuilder<UserNoteWithALongNameTable> where,
+    _i1.OrderByBuilder<UserNoteWithALongNameTable>? orderBy,
+    bool orderDescending = false,
+    _i1.OrderByListBuilder<UserNoteWithALongNameTable>? orderByList,
     _i1.Transaction? transaction,
   }) async {
     return session.db.deleteWhere<UserNoteWithALongName>(
       where: where(UserNoteWithALongName.t),
+      orderBy: orderBy?.call(UserNoteWithALongName.t),
+      orderByList: orderByList?.call(UserNoteWithALongName.t),
+      orderDescending: orderDescending,
       transaction: transaction,
     );
   }

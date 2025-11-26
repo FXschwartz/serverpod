@@ -473,14 +473,32 @@ class BoolDefaultMixRepository {
     );
   }
 
-  /// Deletes all rows matching the [where] expression.
+  /// Deletes all rows matching the [where] expression and returns the deleted
+  /// rows.
+  ///
+  /// To specify the order of the returned deleted rows use [orderBy] or
+  /// [orderByList] when sorting by multiple columns.
+  ///
+  /// ```dart
+  /// var deletedPersons = await Persons.db.deleteWhere(
+  ///   session,
+  ///   where: (t) => t.age.equals(20),
+  ///   orderBy: (t) => t.name,
+  /// );
+  /// ```
   Future<List<BoolDefaultMix>> deleteWhere(
     _i1.Session session, {
     required _i1.WhereExpressionBuilder<BoolDefaultMixTable> where,
+    _i1.OrderByBuilder<BoolDefaultMixTable>? orderBy,
+    bool orderDescending = false,
+    _i1.OrderByListBuilder<BoolDefaultMixTable>? orderByList,
     _i1.Transaction? transaction,
   }) async {
     return session.db.deleteWhere<BoolDefaultMix>(
       where: where(BoolDefaultMix.t),
+      orderBy: orderBy?.call(BoolDefaultMix.t),
+      orderByList: orderByList?.call(BoolDefaultMix.t),
+      orderDescending: orderDescending,
       transaction: transaction,
     );
   }

@@ -576,14 +576,32 @@ class PersonWithLongTableNameRepository {
     );
   }
 
-  /// Deletes all rows matching the [where] expression.
+  /// Deletes all rows matching the [where] expression and returns the deleted
+  /// rows.
+  ///
+  /// To specify the order of the returned deleted rows use [orderBy] or
+  /// [orderByList] when sorting by multiple columns.
+  ///
+  /// ```dart
+  /// var deletedPersons = await Persons.db.deleteWhere(
+  ///   session,
+  ///   where: (t) => t.age.equals(20),
+  ///   orderBy: (t) => t.name,
+  /// );
+  /// ```
   Future<List<PersonWithLongTableName>> deleteWhere(
     _i1.Session session, {
     required _i1.WhereExpressionBuilder<PersonWithLongTableNameTable> where,
+    _i1.OrderByBuilder<PersonWithLongTableNameTable>? orderBy,
+    bool orderDescending = false,
+    _i1.OrderByListBuilder<PersonWithLongTableNameTable>? orderByList,
     _i1.Transaction? transaction,
   }) async {
     return session.db.deleteWhere<PersonWithLongTableName>(
       where: where(PersonWithLongTableName.t),
+      orderBy: orderBy?.call(PersonWithLongTableName.t),
+      orderByList: orderByList?.call(PersonWithLongTableName.t),
+      orderDescending: orderDescending,
       transaction: transaction,
     );
   }

@@ -571,14 +571,32 @@ class TeamIntRepository {
     );
   }
 
-  /// Deletes all rows matching the [where] expression.
+  /// Deletes all rows matching the [where] expression and returns the deleted
+  /// rows.
+  ///
+  /// To specify the order of the returned deleted rows use [orderBy] or
+  /// [orderByList] when sorting by multiple columns.
+  ///
+  /// ```dart
+  /// var deletedPersons = await Persons.db.deleteWhere(
+  ///   session,
+  ///   where: (t) => t.age.equals(20),
+  ///   orderBy: (t) => t.name,
+  /// );
+  /// ```
   Future<List<TeamInt>> deleteWhere(
     _i1.Session session, {
     required _i1.WhereExpressionBuilder<TeamIntTable> where,
+    _i1.OrderByBuilder<TeamIntTable>? orderBy,
+    bool orderDescending = false,
+    _i1.OrderByListBuilder<TeamIntTable>? orderByList,
     _i1.Transaction? transaction,
   }) async {
     return session.db.deleteWhere<TeamInt>(
       where: where(TeamInt.t),
+      orderBy: orderBy?.call(TeamInt.t),
+      orderByList: orderByList?.call(TeamInt.t),
+      orderDescending: orderDescending,
       transaction: transaction,
     );
   }

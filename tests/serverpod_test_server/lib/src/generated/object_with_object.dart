@@ -775,14 +775,32 @@ class ObjectWithObjectRepository {
     );
   }
 
-  /// Deletes all rows matching the [where] expression.
+  /// Deletes all rows matching the [where] expression and returns the deleted
+  /// rows.
+  ///
+  /// To specify the order of the returned deleted rows use [orderBy] or
+  /// [orderByList] when sorting by multiple columns.
+  ///
+  /// ```dart
+  /// var deletedPersons = await Persons.db.deleteWhere(
+  ///   session,
+  ///   where: (t) => t.age.equals(20),
+  ///   orderBy: (t) => t.name,
+  /// );
+  /// ```
   Future<List<ObjectWithObject>> deleteWhere(
     _i1.Session session, {
     required _i1.WhereExpressionBuilder<ObjectWithObjectTable> where,
+    _i1.OrderByBuilder<ObjectWithObjectTable>? orderBy,
+    bool orderDescending = false,
+    _i1.OrderByListBuilder<ObjectWithObjectTable>? orderByList,
     _i1.Transaction? transaction,
   }) async {
     return session.db.deleteWhere<ObjectWithObject>(
       where: where(ObjectWithObject.t),
+      orderBy: orderBy?.call(ObjectWithObject.t),
+      orderByList: orderByList?.call(ObjectWithObject.t),
+      orderDescending: orderDescending,
       transaction: transaction,
     );
   }

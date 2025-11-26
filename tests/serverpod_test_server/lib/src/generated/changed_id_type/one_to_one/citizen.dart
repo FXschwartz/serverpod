@@ -618,14 +618,32 @@ class CitizenIntRepository {
     );
   }
 
-  /// Deletes all rows matching the [where] expression.
+  /// Deletes all rows matching the [where] expression and returns the deleted
+  /// rows.
+  ///
+  /// To specify the order of the returned deleted rows use [orderBy] or
+  /// [orderByList] when sorting by multiple columns.
+  ///
+  /// ```dart
+  /// var deletedPersons = await Persons.db.deleteWhere(
+  ///   session,
+  ///   where: (t) => t.age.equals(20),
+  ///   orderBy: (t) => t.name,
+  /// );
+  /// ```
   Future<List<CitizenInt>> deleteWhere(
     _i1.Session session, {
     required _i1.WhereExpressionBuilder<CitizenIntTable> where,
+    _i1.OrderByBuilder<CitizenIntTable>? orderBy,
+    bool orderDescending = false,
+    _i1.OrderByListBuilder<CitizenIntTable>? orderByList,
     _i1.Transaction? transaction,
   }) async {
     return session.db.deleteWhere<CitizenInt>(
       where: where(CitizenInt.t),
+      orderBy: orderBy?.call(CitizenInt.t),
+      orderByList: orderByList?.call(CitizenInt.t),
+      orderDescending: orderDescending,
       transaction: transaction,
     );
   }

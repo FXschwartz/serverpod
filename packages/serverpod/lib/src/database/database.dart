@@ -274,15 +274,27 @@ class Database {
     );
   }
 
-  /// Deletes all rows matching the [where] expression.
+  /// Deletes all rows matching the [where] expression and returns the
+  /// deleted rows.
+  ///
+  /// Use [where] to specify which items to delete.
+  ///
+  /// To specify the order of the returned deleted items use [orderBy] or
+  /// [orderByList] when sorting by multiple columns.
   @internal
   Future<List<T>> deleteWhere<T extends TableRow>({
     required Expression where,
+    Column? orderBy,
+    List<Order>? orderByList,
+    bool orderDescending = false,
     Transaction? transaction,
   }) async {
     return _databaseConnection.deleteWhere<T>(
       _session,
       where,
+      orderBy: orderBy,
+      orderByList: orderByList,
+      orderDescending: orderDescending,
       // ignore: invalid_use_of_visible_for_testing_member
       transaction: transaction ?? _session.transaction,
     );

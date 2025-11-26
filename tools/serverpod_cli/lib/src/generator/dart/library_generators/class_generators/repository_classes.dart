@@ -1181,7 +1181,20 @@ class BuildRepositoryClass {
   Method _buildDeleteWhereMethod(String className) {
     return Method((methodBuilder) {
       methodBuilder
-        ..docs.add('/// Deletes all rows matching the [where] expression.')
+        ..docs.add('''
+/// Deletes all rows matching the [where] expression and returns the deleted
+/// rows.
+///
+/// To specify the order of the returned deleted rows use [orderBy] or
+/// [orderByList] when sorting by multiple columns.
+///
+/// ```dart
+/// var deletedPersons = await Persons.db.deleteWhere(
+///   session,
+///   where: (t) => t.age.equals(20),
+///   orderBy: (t) => t.name,
+/// );
+/// ```''')
         ..name = 'deleteWhere'
         ..returns = TypeReference(
           (r) => r
@@ -1219,6 +1232,25 @@ class BuildRepositoryClass {
           ),
           Parameter(
             (p) => p
+              ..type = typeOrderByBuilder(className, serverCode)
+              ..name = 'orderBy'
+              ..named = true,
+          ),
+          Parameter(
+            (p) => p
+              ..type = refer('bool')
+              ..name = 'orderDescending'
+              ..defaultTo = const Code('false')
+              ..named = true,
+          ),
+          Parameter(
+            (p) => p
+              ..type = typeOrderByListBuilder(className, serverCode)
+              ..name = 'orderByList'
+              ..named = true,
+          ),
+          Parameter(
+            (p) => p
               ..type = TypeReference(
                 (b) => b
                   ..isNullable = true
@@ -1237,6 +1269,15 @@ class BuildRepositoryClass {
               [],
               {
                 'where': refer('where').call([refer(className).property('t')]),
+                'orderBy': refer('orderBy').nullSafeProperty('call').call(
+                  [refer(className).property('t')],
+                ),
+                'orderByList': refer('orderByList')
+                    .nullSafeProperty('call')
+                    .call(
+                      [refer(className).property('t')],
+                    ),
+                'orderDescending': refer('orderDescending'),
                 'transaction': refer('transaction'),
               },
               [refer(className)],

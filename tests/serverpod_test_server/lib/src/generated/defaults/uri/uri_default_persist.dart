@@ -421,14 +421,32 @@ class UriDefaultPersistRepository {
     );
   }
 
-  /// Deletes all rows matching the [where] expression.
+  /// Deletes all rows matching the [where] expression and returns the deleted
+  /// rows.
+  ///
+  /// To specify the order of the returned deleted rows use [orderBy] or
+  /// [orderByList] when sorting by multiple columns.
+  ///
+  /// ```dart
+  /// var deletedPersons = await Persons.db.deleteWhere(
+  ///   session,
+  ///   where: (t) => t.age.equals(20),
+  ///   orderBy: (t) => t.name,
+  /// );
+  /// ```
   Future<List<UriDefaultPersist>> deleteWhere(
     _i1.Session session, {
     required _i1.WhereExpressionBuilder<UriDefaultPersistTable> where,
+    _i1.OrderByBuilder<UriDefaultPersistTable>? orderBy,
+    bool orderDescending = false,
+    _i1.OrderByListBuilder<UriDefaultPersistTable>? orderByList,
     _i1.Transaction? transaction,
   }) async {
     return session.db.deleteWhere<UriDefaultPersist>(
       where: where(UriDefaultPersist.t),
+      orderBy: orderBy?.call(UriDefaultPersist.t),
+      orderByList: orderByList?.call(UriDefaultPersist.t),
+      orderDescending: orderDescending,
       transaction: transaction,
     );
   }

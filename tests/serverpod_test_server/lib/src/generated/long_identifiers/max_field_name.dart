@@ -422,14 +422,32 @@ class MaxFieldNameRepository {
     );
   }
 
-  /// Deletes all rows matching the [where] expression.
+  /// Deletes all rows matching the [where] expression and returns the deleted
+  /// rows.
+  ///
+  /// To specify the order of the returned deleted rows use [orderBy] or
+  /// [orderByList] when sorting by multiple columns.
+  ///
+  /// ```dart
+  /// var deletedPersons = await Persons.db.deleteWhere(
+  ///   session,
+  ///   where: (t) => t.age.equals(20),
+  ///   orderBy: (t) => t.name,
+  /// );
+  /// ```
   Future<List<MaxFieldName>> deleteWhere(
     _i1.Session session, {
     required _i1.WhereExpressionBuilder<MaxFieldNameTable> where,
+    _i1.OrderByBuilder<MaxFieldNameTable>? orderBy,
+    bool orderDescending = false,
+    _i1.OrderByListBuilder<MaxFieldNameTable>? orderByList,
     _i1.Transaction? transaction,
   }) async {
     return session.db.deleteWhere<MaxFieldName>(
       where: where(MaxFieldName.t),
+      orderBy: orderBy?.call(MaxFieldName.t),
+      orderByList: orderByList?.call(MaxFieldName.t),
+      orderDescending: orderDescending,
       transaction: transaction,
     );
   }

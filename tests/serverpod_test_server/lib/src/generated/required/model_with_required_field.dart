@@ -462,14 +462,32 @@ class ModelWithRequiredFieldRepository {
     );
   }
 
-  /// Deletes all rows matching the [where] expression.
+  /// Deletes all rows matching the [where] expression and returns the deleted
+  /// rows.
+  ///
+  /// To specify the order of the returned deleted rows use [orderBy] or
+  /// [orderByList] when sorting by multiple columns.
+  ///
+  /// ```dart
+  /// var deletedPersons = await Persons.db.deleteWhere(
+  ///   session,
+  ///   where: (t) => t.age.equals(20),
+  ///   orderBy: (t) => t.name,
+  /// );
+  /// ```
   Future<List<ModelWithRequiredField>> deleteWhere(
     _i1.Session session, {
     required _i1.WhereExpressionBuilder<ModelWithRequiredFieldTable> where,
+    _i1.OrderByBuilder<ModelWithRequiredFieldTable>? orderBy,
+    bool orderDescending = false,
+    _i1.OrderByListBuilder<ModelWithRequiredFieldTable>? orderByList,
     _i1.Transaction? transaction,
   }) async {
     return session.db.deleteWhere<ModelWithRequiredField>(
       where: where(ModelWithRequiredField.t),
+      orderBy: orderBy?.call(ModelWithRequiredField.t),
+      orderByList: orderByList?.call(ModelWithRequiredField.t),
+      orderDescending: orderDescending,
       transaction: transaction,
     );
   }

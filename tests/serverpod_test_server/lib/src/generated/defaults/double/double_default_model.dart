@@ -419,13 +419,22 @@ class DoubleDefaultModelRepository {
   /// Deletes all [DoubleDefaultModel]s in the list and returns the deleted rows.
   /// This is an atomic operation, meaning that if one of the rows fail to
   /// be deleted, none of the rows will be deleted.
+  ///
+  /// To specify the order of the returned deleted rows use [orderBy] or
+  /// [orderByList] when sorting by multiple columns.
   Future<List<DoubleDefaultModel>> delete(
     _i1.Session session,
     List<DoubleDefaultModel> rows, {
+    _i1.OrderByBuilder<DoubleDefaultModelTable>? orderBy,
+    bool orderDescending = false,
+    _i1.OrderByListBuilder<DoubleDefaultModelTable>? orderByList,
     _i1.Transaction? transaction,
   }) async {
     return session.db.delete<DoubleDefaultModel>(
       rows,
+      orderBy: orderBy?.call(DoubleDefaultModel.t),
+      orderByList: orderByList?.call(DoubleDefaultModel.t),
+      orderDescending: orderDescending,
       transaction: transaction,
     );
   }

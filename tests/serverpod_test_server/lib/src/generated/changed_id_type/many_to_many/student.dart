@@ -473,13 +473,22 @@ class StudentUuidRepository {
   /// Deletes all [StudentUuid]s in the list and returns the deleted rows.
   /// This is an atomic operation, meaning that if one of the rows fail to
   /// be deleted, none of the rows will be deleted.
+  ///
+  /// To specify the order of the returned deleted rows use [orderBy] or
+  /// [orderByList] when sorting by multiple columns.
   Future<List<StudentUuid>> delete(
     _i1.Session session,
     List<StudentUuid> rows, {
+    _i1.OrderByBuilder<StudentUuidTable>? orderBy,
+    bool orderDescending = false,
+    _i1.OrderByListBuilder<StudentUuidTable>? orderByList,
     _i1.Transaction? transaction,
   }) async {
     return session.db.delete<StudentUuid>(
       rows,
+      orderBy: orderBy?.call(StudentUuid.t),
+      orderByList: orderByList?.call(StudentUuid.t),
+      orderDescending: orderDescending,
       transaction: transaction,
     );
   }

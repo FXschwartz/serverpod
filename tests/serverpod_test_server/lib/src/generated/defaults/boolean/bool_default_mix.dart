@@ -450,13 +450,22 @@ class BoolDefaultMixRepository {
   /// Deletes all [BoolDefaultMix]s in the list and returns the deleted rows.
   /// This is an atomic operation, meaning that if one of the rows fail to
   /// be deleted, none of the rows will be deleted.
+  ///
+  /// To specify the order of the returned deleted rows use [orderBy] or
+  /// [orderByList] when sorting by multiple columns.
   Future<List<BoolDefaultMix>> delete(
     _i1.Session session,
     List<BoolDefaultMix> rows, {
+    _i1.OrderByBuilder<BoolDefaultMixTable>? orderBy,
+    bool orderDescending = false,
+    _i1.OrderByListBuilder<BoolDefaultMixTable>? orderByList,
     _i1.Transaction? transaction,
   }) async {
     return session.db.delete<BoolDefaultMix>(
       rows,
+      orderBy: orderBy?.call(BoolDefaultMix.t),
+      orderByList: orderByList?.call(BoolDefaultMix.t),
+      orderDescending: orderDescending,
       transaction: transaction,
     );
   }

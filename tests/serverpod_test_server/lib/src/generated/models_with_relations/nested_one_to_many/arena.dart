@@ -439,13 +439,22 @@ class ArenaRepository {
   /// Deletes all [Arena]s in the list and returns the deleted rows.
   /// This is an atomic operation, meaning that if one of the rows fail to
   /// be deleted, none of the rows will be deleted.
+  ///
+  /// To specify the order of the returned deleted rows use [orderBy] or
+  /// [orderByList] when sorting by multiple columns.
   Future<List<Arena>> delete(
     _i1.Session session,
     List<Arena> rows, {
+    _i1.OrderByBuilder<ArenaTable>? orderBy,
+    bool orderDescending = false,
+    _i1.OrderByListBuilder<ArenaTable>? orderByList,
     _i1.Transaction? transaction,
   }) async {
     return session.db.delete<Arena>(
       rows,
+      orderBy: orderBy?.call(Arena.t),
+      orderByList: orderByList?.call(Arena.t),
+      orderDescending: orderDescending,
       transaction: transaction,
     );
   }

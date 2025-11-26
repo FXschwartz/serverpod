@@ -702,13 +702,22 @@ class StringDefaultPersistRepository {
   /// Deletes all [StringDefaultPersist]s in the list and returns the deleted rows.
   /// This is an atomic operation, meaning that if one of the rows fail to
   /// be deleted, none of the rows will be deleted.
+  ///
+  /// To specify the order of the returned deleted rows use [orderBy] or
+  /// [orderByList] when sorting by multiple columns.
   Future<List<StringDefaultPersist>> delete(
     _i1.Session session,
     List<StringDefaultPersist> rows, {
+    _i1.OrderByBuilder<StringDefaultPersistTable>? orderBy,
+    bool orderDescending = false,
+    _i1.OrderByListBuilder<StringDefaultPersistTable>? orderByList,
     _i1.Transaction? transaction,
   }) async {
     return session.db.delete<StringDefaultPersist>(
       rows,
+      orderBy: orderBy?.call(StringDefaultPersist.t),
+      orderByList: orderByList?.call(StringDefaultPersist.t),
+      orderDescending: orderDescending,
       transaction: transaction,
     );
   }

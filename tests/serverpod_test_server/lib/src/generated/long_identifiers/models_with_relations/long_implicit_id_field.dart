@@ -451,13 +451,22 @@ class LongImplicitIdFieldRepository {
   /// Deletes all [LongImplicitIdField]s in the list and returns the deleted rows.
   /// This is an atomic operation, meaning that if one of the rows fail to
   /// be deleted, none of the rows will be deleted.
+  ///
+  /// To specify the order of the returned deleted rows use [orderBy] or
+  /// [orderByList] when sorting by multiple columns.
   Future<List<LongImplicitIdField>> delete(
     _i1.Session session,
     List<LongImplicitIdField> rows, {
+    _i1.OrderByBuilder<LongImplicitIdFieldTable>? orderBy,
+    bool orderDescending = false,
+    _i1.OrderByListBuilder<LongImplicitIdFieldTable>? orderByList,
     _i1.Transaction? transaction,
   }) async {
     return session.db.delete<LongImplicitIdField>(
       rows,
+      orderBy: orderBy?.call(LongImplicitIdField.t),
+      orderByList: orderByList?.call(LongImplicitIdField.t),
+      orderDescending: orderDescending,
       transaction: transaction,
     );
   }

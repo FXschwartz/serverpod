@@ -392,13 +392,22 @@ class SimpleDataRepository {
   /// Deletes all [SimpleData]s in the list and returns the deleted rows.
   /// This is an atomic operation, meaning that if one of the rows fail to
   /// be deleted, none of the rows will be deleted.
+  ///
+  /// To specify the order of the returned deleted rows use [orderBy] or
+  /// [orderByList] when sorting by multiple columns.
   Future<List<SimpleData>> delete(
     _i1.Session session,
     List<SimpleData> rows, {
+    _i1.OrderByBuilder<SimpleDataTable>? orderBy,
+    bool orderDescending = false,
+    _i1.OrderByListBuilder<SimpleDataTable>? orderByList,
     _i1.Transaction? transaction,
   }) async {
     return session.db.delete<SimpleData>(
       rows,
+      orderBy: orderBy?.call(SimpleData.t),
+      orderByList: orderByList?.call(SimpleData.t),
+      orderDescending: orderDescending,
       transaction: transaction,
     );
   }

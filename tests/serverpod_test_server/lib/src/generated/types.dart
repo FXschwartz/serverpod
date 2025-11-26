@@ -934,13 +934,22 @@ class TypesRepository {
   /// Deletes all [Types]s in the list and returns the deleted rows.
   /// This is an atomic operation, meaning that if one of the rows fail to
   /// be deleted, none of the rows will be deleted.
+  ///
+  /// To specify the order of the returned deleted rows use [orderBy] or
+  /// [orderByList] when sorting by multiple columns.
   Future<List<Types>> delete(
     _i1.Session session,
     List<Types> rows, {
+    _i1.OrderByBuilder<TypesTable>? orderBy,
+    bool orderDescending = false,
+    _i1.OrderByListBuilder<TypesTable>? orderByList,
     _i1.Transaction? transaction,
   }) async {
     return session.db.delete<Types>(
       rows,
+      orderBy: orderBy?.call(Types.t),
+      orderByList: orderByList?.call(Types.t),
+      orderDescending: orderDescending,
       transaction: transaction,
     );
   }

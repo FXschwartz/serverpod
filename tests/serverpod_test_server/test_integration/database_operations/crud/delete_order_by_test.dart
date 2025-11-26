@@ -27,9 +27,9 @@ void main() async {
     test(
       'then deleted rows are returned in ascending order by default',
       () async {
-        var deleteResult = await SimpleData.db.deleteWhere(
+        var deleteResult = await SimpleData.db.delete(
           session,
-          where: (t) => Constant.bool(true),
+          data,
           orderBy: (t) => t.num,
         );
 
@@ -42,9 +42,9 @@ void main() async {
     test(
       'then deleted rows are returned in descending order when orderDescending is true',
       () async {
-        var deleteResult = await SimpleData.db.deleteWhere(
+        var deleteResult = await SimpleData.db.delete(
           session,
-          where: (t) => Constant.bool(true),
+          data,
           orderBy: (t) => t.num,
           orderDescending: true,
         );
@@ -56,46 +56,11 @@ void main() async {
     );
 
     test(
-      'then deleted rows are returned in id order when ordering by id',
+      'then all rows are still deleted when no orderBy is specified',
       () async {
-        var deleteResult = await SimpleData.db.deleteWhere(
+        var deleteResult = await SimpleData.db.delete(
           session,
-          where: (t) => Constant.bool(true),
-          orderBy: (t) => t.id,
-        );
-
-        expect(deleteResult, hasLength(3));
-        var ids = deleteResult.map((e) => e.id).toList();
-        expect(ids, [data[0].id, data[1].id, data[2].id]);
-      },
-    );
-
-    test(
-      'then only matching rows are deleted and returned in order when using filter',
-      () async {
-        var deleteResult = await SimpleData.db.deleteWhere(
-          session,
-          where: (t) => t.num.notEquals(2),
-          orderBy: (t) => t.num,
-        );
-
-        expect(deleteResult, hasLength(2));
-        var numbers = deleteResult.map((e) => e.num).toList();
-        expect(numbers, [1, 3]);
-
-        // Verify the remaining row
-        var remaining = await SimpleData.db.find(session);
-        expect(remaining, hasLength(1));
-        expect(remaining.first.num, 2);
-      },
-    );
-
-    test(
-      'then all matching rows are still deleted when no orderBy is specified',
-      () async {
-        var deleteResult = await SimpleData.db.deleteWhere(
-          session,
-          where: (t) => Constant.bool(true),
+          data,
         );
 
         expect(deleteResult, hasLength(3));
@@ -107,15 +72,36 @@ void main() async {
     );
 
     test(
-      'then an empty list is returned when no rows match',
+      'then deleted rows respect multi-column order when using orderByList',
       () async {
-        var result = await SimpleData.db.deleteWhere(
+        // Clean up and insert data with multiple sortable fields
+        await UniqueData.db.deleteWhere(
           session,
-          where: (t) => t.num.equals(999),
-          orderBy: (t) => t.num,
+          where: (_) => Constant.bool(true),
+        );
+        var uniqueData = await UniqueData.db.insert(session, [
+          UniqueData(number: 1, email: 'charlie@example.com'),
+          UniqueData(number: 2, email: 'alice@example.com'),
+          UniqueData(number: 1, email: 'bob@example.com'),
+        ]);
+
+        var deleteResult = await UniqueData.db.delete(
+          session,
+          uniqueData,
+          orderByList: (t) => [
+            Order(column: t.number),
+            Order(column: t.email),
+          ],
         );
 
-        expect(result, isEmpty);
+        expect(deleteResult, hasLength(3));
+        var emails = deleteResult.map((e) => e.email).toList();
+        // number=1 first (bob, charlie sorted by email), then number=2 (alice)
+        expect(emails, [
+          'bob@example.com',
+          'charlie@example.com',
+          'alice@example.com',
+        ]);
       },
     );
   });

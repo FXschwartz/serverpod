@@ -425,13 +425,22 @@ class ScopeNoneFieldsRepository {
   /// Deletes all [ScopeNoneFields]s in the list and returns the deleted rows.
   /// This is an atomic operation, meaning that if one of the rows fail to
   /// be deleted, none of the rows will be deleted.
+  ///
+  /// To specify the order of the returned deleted rows use [orderBy] or
+  /// [orderByList] when sorting by multiple columns.
   Future<List<ScopeNoneFields>> delete(
     _i1.Session session,
     List<ScopeNoneFields> rows, {
+    _i1.OrderByBuilder<ScopeNoneFieldsTable>? orderBy,
+    bool orderDescending = false,
+    _i1.OrderByListBuilder<ScopeNoneFieldsTable>? orderByList,
     _i1.Transaction? transaction,
   }) async {
     return session.db.delete<ScopeNoneFields>(
       rows,
+      orderBy: orderBy?.call(ScopeNoneFields.t),
+      orderByList: orderByList?.call(ScopeNoneFields.t),
+      orderDescending: orderDescending,
       transaction: transaction,
     );
   }

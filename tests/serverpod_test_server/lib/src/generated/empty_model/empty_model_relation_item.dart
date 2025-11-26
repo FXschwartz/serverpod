@@ -449,13 +449,22 @@ class EmptyModelRelationItemRepository {
   /// Deletes all [EmptyModelRelationItem]s in the list and returns the deleted rows.
   /// This is an atomic operation, meaning that if one of the rows fail to
   /// be deleted, none of the rows will be deleted.
+  ///
+  /// To specify the order of the returned deleted rows use [orderBy] or
+  /// [orderByList] when sorting by multiple columns.
   Future<List<EmptyModelRelationItem>> delete(
     _i1.Session session,
     List<EmptyModelRelationItem> rows, {
+    _i1.OrderByBuilder<EmptyModelRelationItemTable>? orderBy,
+    bool orderDescending = false,
+    _i1.OrderByListBuilder<EmptyModelRelationItemTable>? orderByList,
     _i1.Transaction? transaction,
   }) async {
     return session.db.delete<EmptyModelRelationItem>(
       rows,
+      orderBy: orderBy?.call(EmptyModelRelationItem.t),
+      orderByList: orderByList?.call(EmptyModelRelationItem.t),
+      orderDescending: orderDescending,
       transaction: transaction,
     );
   }

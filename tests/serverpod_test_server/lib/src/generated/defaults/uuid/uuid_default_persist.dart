@@ -472,13 +472,22 @@ class UuidDefaultPersistRepository {
   /// Deletes all [UuidDefaultPersist]s in the list and returns the deleted rows.
   /// This is an atomic operation, meaning that if one of the rows fail to
   /// be deleted, none of the rows will be deleted.
+  ///
+  /// To specify the order of the returned deleted rows use [orderBy] or
+  /// [orderByList] when sorting by multiple columns.
   Future<List<UuidDefaultPersist>> delete(
     _i1.Session session,
     List<UuidDefaultPersist> rows, {
+    _i1.OrderByBuilder<UuidDefaultPersistTable>? orderBy,
+    bool orderDescending = false,
+    _i1.OrderByListBuilder<UuidDefaultPersistTable>? orderByList,
     _i1.Transaction? transaction,
   }) async {
     return session.db.delete<UuidDefaultPersist>(
       rows,
+      orderBy: orderBy?.call(UuidDefaultPersist.t),
+      orderByList: orderByList?.call(UuidDefaultPersist.t),
+      orderDescending: orderDescending,
       transaction: transaction,
     );
   }

@@ -459,13 +459,22 @@ class DateTimeDefaultRepository {
   /// Deletes all [DateTimeDefault]s in the list and returns the deleted rows.
   /// This is an atomic operation, meaning that if one of the rows fail to
   /// be deleted, none of the rows will be deleted.
+  ///
+  /// To specify the order of the returned deleted rows use [orderBy] or
+  /// [orderByList] when sorting by multiple columns.
   Future<List<DateTimeDefault>> delete(
     _i1.Session session,
     List<DateTimeDefault> rows, {
+    _i1.OrderByBuilder<DateTimeDefaultTable>? orderBy,
+    bool orderDescending = false,
+    _i1.OrderByListBuilder<DateTimeDefaultTable>? orderByList,
     _i1.Transaction? transaction,
   }) async {
     return session.db.delete<DateTimeDefault>(
       rows,
+      orderBy: orderBy?.call(DateTimeDefault.t),
+      orderByList: orderByList?.call(DateTimeDefault.t),
+      orderDescending: orderDescending,
       transaction: transaction,
     );
   }

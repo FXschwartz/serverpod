@@ -435,13 +435,22 @@ class ChapterRepository {
   /// Deletes all [Chapter]s in the list and returns the deleted rows.
   /// This is an atomic operation, meaning that if one of the rows fail to
   /// be deleted, none of the rows will be deleted.
+  ///
+  /// To specify the order of the returned deleted rows use [orderBy] or
+  /// [orderByList] when sorting by multiple columns.
   Future<List<Chapter>> delete(
     _i1.Session session,
     List<Chapter> rows, {
+    _i1.OrderByBuilder<ChapterTable>? orderBy,
+    bool orderDescending = false,
+    _i1.OrderByListBuilder<ChapterTable>? orderByList,
     _i1.Transaction? transaction,
   }) async {
     return session.db.delete<Chapter>(
       rows,
+      orderBy: orderBy?.call(Chapter.t),
+      orderByList: orderByList?.call(Chapter.t),
+      orderDescending: orderDescending,
       transaction: transaction,
     );
   }

@@ -516,13 +516,22 @@ class BlockingRepository {
   /// Deletes all [Blocking]s in the list and returns the deleted rows.
   /// This is an atomic operation, meaning that if one of the rows fail to
   /// be deleted, none of the rows will be deleted.
+  ///
+  /// To specify the order of the returned deleted rows use [orderBy] or
+  /// [orderByList] when sorting by multiple columns.
   Future<List<Blocking>> delete(
     _i1.Session session,
     List<Blocking> rows, {
+    _i1.OrderByBuilder<BlockingTable>? orderBy,
+    bool orderDescending = false,
+    _i1.OrderByListBuilder<BlockingTable>? orderByList,
     _i1.Transaction? transaction,
   }) async {
     return session.db.delete<Blocking>(
       rows,
+      orderBy: orderBy?.call(Blocking.t),
+      orderByList: orderByList?.call(Blocking.t),
+      orderDescending: orderDescending,
       transaction: transaction,
     );
   }

@@ -247,14 +247,23 @@ class Database {
   /// Deletes all [TableRow]s in the list and returns the deleted rows.
   /// This is an atomic operation, meaning that if one of the rows fails to
   /// be deleted, none of the rows will be deleted.
+  ///
+  /// To specify the order of the returned deleted rows use [orderBy] or
+  /// [orderByList] when sorting by multiple columns.
   @internal
   Future<List<T>> delete<T extends TableRow>(
     List<T> rows, {
+    Column? orderBy,
+    List<Order>? orderByList,
+    bool orderDescending = false,
     Transaction? transaction,
   }) async {
     return _databaseConnection.delete<T>(
       _session,
       rows,
+      orderBy: orderBy,
+      orderByList: orderByList,
+      orderDescending: orderDescending,
       // ignore: invalid_use_of_visible_for_testing_member
       transaction: transaction ?? _session.transaction,
     );

@@ -471,13 +471,22 @@ class EnumDefaultMixRepository {
   /// Deletes all [EnumDefaultMix]s in the list and returns the deleted rows.
   /// This is an atomic operation, meaning that if one of the rows fail to
   /// be deleted, none of the rows will be deleted.
+  ///
+  /// To specify the order of the returned deleted rows use [orderBy] or
+  /// [orderByList] when sorting by multiple columns.
   Future<List<EnumDefaultMix>> delete(
     _i1.Session session,
     List<EnumDefaultMix> rows, {
+    _i1.OrderByBuilder<EnumDefaultMixTable>? orderBy,
+    bool orderDescending = false,
+    _i1.OrderByListBuilder<EnumDefaultMixTable>? orderByList,
     _i1.Transaction? transaction,
   }) async {
     return session.db.delete<EnumDefaultMix>(
       rows,
+      orderBy: orderBy?.call(EnumDefaultMix.t),
+      orderByList: orderByList?.call(EnumDefaultMix.t),
+      orderDescending: orderDescending,
       transaction: transaction,
     );
   }

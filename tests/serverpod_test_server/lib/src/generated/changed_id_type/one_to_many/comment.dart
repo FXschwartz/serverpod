@@ -467,13 +467,22 @@ class CommentIntRepository {
   /// Deletes all [CommentInt]s in the list and returns the deleted rows.
   /// This is an atomic operation, meaning that if one of the rows fail to
   /// be deleted, none of the rows will be deleted.
+  ///
+  /// To specify the order of the returned deleted rows use [orderBy] or
+  /// [orderByList] when sorting by multiple columns.
   Future<List<CommentInt>> delete(
     _i1.Session session,
     List<CommentInt> rows, {
+    _i1.OrderByBuilder<CommentIntTable>? orderBy,
+    bool orderDescending = false,
+    _i1.OrderByListBuilder<CommentIntTable>? orderByList,
     _i1.Transaction? transaction,
   }) async {
     return session.db.delete<CommentInt>(
       rows,
+      orderBy: orderBy?.call(CommentInt.t),
+      orderByList: orderByList?.call(CommentInt.t),
+      orderDescending: orderDescending,
       transaction: transaction,
     );
   }

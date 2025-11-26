@@ -548,13 +548,22 @@ class TeamIntRepository {
   /// Deletes all [TeamInt]s in the list and returns the deleted rows.
   /// This is an atomic operation, meaning that if one of the rows fail to
   /// be deleted, none of the rows will be deleted.
+  ///
+  /// To specify the order of the returned deleted rows use [orderBy] or
+  /// [orderByList] when sorting by multiple columns.
   Future<List<TeamInt>> delete(
     _i1.Session session,
     List<TeamInt> rows, {
+    _i1.OrderByBuilder<TeamIntTable>? orderBy,
+    bool orderDescending = false,
+    _i1.OrderByListBuilder<TeamIntTable>? orderByList,
     _i1.Transaction? transaction,
   }) async {
     return session.db.delete<TeamInt>(
       rows,
+      orderBy: orderBy?.call(TeamInt.t),
+      orderByList: orderByList?.call(TeamInt.t),
+      orderDescending: orderDescending,
       transaction: transaction,
     );
   }

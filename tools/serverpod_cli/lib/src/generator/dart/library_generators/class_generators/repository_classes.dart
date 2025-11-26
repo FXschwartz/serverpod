@@ -1065,7 +1065,10 @@ class BuildRepositoryClass {
         ..docs.add('''
 /// Deletes all [$className]s in the list and returns the deleted rows.
 /// This is an atomic operation, meaning that if one of the rows fail to
-/// be deleted, none of the rows will be deleted.''')
+/// be deleted, none of the rows will be deleted.
+///
+/// To specify the order of the returned deleted rows use [orderBy] or
+/// [orderByList] when sorting by multiple columns.''')
         ..name = 'delete'
         ..returns = TypeReference(
           (r) => r
@@ -1097,6 +1100,25 @@ class BuildRepositoryClass {
         ..optionalParameters.addAll([
           Parameter(
             (p) => p
+              ..type = typeOrderByBuilder(className, serverCode)
+              ..name = 'orderBy'
+              ..named = true,
+          ),
+          Parameter(
+            (p) => p
+              ..type = refer('bool')
+              ..name = 'orderDescending'
+              ..defaultTo = const Code('false')
+              ..named = true,
+          ),
+          Parameter(
+            (p) => p
+              ..type = typeOrderByListBuilder(className, serverCode)
+              ..name = 'orderByList'
+              ..named = true,
+          ),
+          Parameter(
+            (p) => p
               ..type = TypeReference(
                 (b) => b
                   ..isNullable = true
@@ -1114,6 +1136,15 @@ class BuildRepositoryClass {
             .call(
               [refer('rows')],
               {
+                'orderBy': refer('orderBy').nullSafeProperty('call').call(
+                  [refer(className).property('t')],
+                ),
+                'orderByList': refer('orderByList')
+                    .nullSafeProperty('call')
+                    .call(
+                      [refer(className).property('t')],
+                    ),
+                'orderDescending': refer('orderDescending'),
                 'transaction': refer('transaction'),
               },
               [refer(className)],

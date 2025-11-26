@@ -463,13 +463,22 @@ class TownRepository {
   /// Deletes all [Town]s in the list and returns the deleted rows.
   /// This is an atomic operation, meaning that if one of the rows fail to
   /// be deleted, none of the rows will be deleted.
+  ///
+  /// To specify the order of the returned deleted rows use [orderBy] or
+  /// [orderByList] when sorting by multiple columns.
   Future<List<Town>> delete(
     _i1.Session session,
     List<Town> rows, {
+    _i1.OrderByBuilder<TownTable>? orderBy,
+    bool orderDescending = false,
+    _i1.OrderByListBuilder<TownTable>? orderByList,
     _i1.Transaction? transaction,
   }) async {
     return session.db.delete<Town>(
       rows,
+      orderBy: orderBy?.call(Town.t),
+      orderByList: orderByList?.call(Town.t),
+      orderDescending: orderDescending,
       transaction: transaction,
     );
   }

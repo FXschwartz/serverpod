@@ -493,13 +493,22 @@ class UserNoteCollectionRepository {
   /// Deletes all [UserNoteCollection]s in the list and returns the deleted rows.
   /// This is an atomic operation, meaning that if one of the rows fail to
   /// be deleted, none of the rows will be deleted.
+  ///
+  /// To specify the order of the returned deleted rows use [orderBy] or
+  /// [orderByList] when sorting by multiple columns.
   Future<List<UserNoteCollection>> delete(
     _i1.Session session,
     List<UserNoteCollection> rows, {
+    _i1.OrderByBuilder<UserNoteCollectionTable>? orderBy,
+    bool orderDescending = false,
+    _i1.OrderByListBuilder<UserNoteCollectionTable>? orderByList,
     _i1.Transaction? transaction,
   }) async {
     return session.db.delete<UserNoteCollection>(
       rows,
+      orderBy: orderBy?.call(UserNoteCollection.t),
+      orderByList: orderByList?.call(UserNoteCollection.t),
+      orderDescending: orderDescending,
       transaction: transaction,
     );
   }

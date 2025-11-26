@@ -393,13 +393,22 @@ class ObjectWithByteDataRepository {
   /// Deletes all [ObjectWithByteData]s in the list and returns the deleted rows.
   /// This is an atomic operation, meaning that if one of the rows fail to
   /// be deleted, none of the rows will be deleted.
+  ///
+  /// To specify the order of the returned deleted rows use [orderBy] or
+  /// [orderByList] when sorting by multiple columns.
   Future<List<ObjectWithByteData>> delete(
     _i1.Session session,
     List<ObjectWithByteData> rows, {
+    _i1.OrderByBuilder<ObjectWithByteDataTable>? orderBy,
+    bool orderDescending = false,
+    _i1.OrderByListBuilder<ObjectWithByteDataTable>? orderByList,
     _i1.Transaction? transaction,
   }) async {
     return session.db.delete<ObjectWithByteData>(
       rows,
+      orderBy: orderBy?.call(ObjectWithByteData.t),
+      orderByList: orderByList?.call(ObjectWithByteData.t),
+      orderDescending: orderDescending,
       transaction: transaction,
     );
   }

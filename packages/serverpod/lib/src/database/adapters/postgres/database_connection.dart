@@ -377,6 +377,9 @@ class DatabaseConnection {
   Future<List<T>> delete<T extends TableRow>(
     Session session,
     List<T> rows, {
+    Column? orderBy,
+    List<Order>? orderByList,
+    bool orderDescending = false,
     Transaction? transaction,
   }) async {
     if (rows.isEmpty) return [];
@@ -389,6 +392,9 @@ class DatabaseConnection {
     return deleteWhere<T>(
       session,
       table.id.inSet(rows.map((row) => row.id!).castToIdType().toSet()),
+      orderBy: orderBy,
+      orderByList: orderByList,
+      orderDescending: orderDescending,
       transaction: transaction,
     );
   }

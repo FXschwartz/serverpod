@@ -466,13 +466,22 @@ class PlayerUuidRepository {
   /// Deletes all [PlayerUuid]s in the list and returns the deleted rows.
   /// This is an atomic operation, meaning that if one of the rows fail to
   /// be deleted, none of the rows will be deleted.
+  ///
+  /// To specify the order of the returned deleted rows use [orderBy] or
+  /// [orderByList] when sorting by multiple columns.
   Future<List<PlayerUuid>> delete(
     _i1.Session session,
     List<PlayerUuid> rows, {
+    _i1.OrderByBuilder<PlayerUuidTable>? orderBy,
+    bool orderDescending = false,
+    _i1.OrderByListBuilder<PlayerUuidTable>? orderByList,
     _i1.Transaction? transaction,
   }) async {
     return session.db.delete<PlayerUuid>(
       rows,
+      orderBy: orderBy?.call(PlayerUuid.t),
+      orderByList: orderByList?.call(PlayerUuid.t),
+      orderDescending: orderDescending,
       transaction: transaction,
     );
   }

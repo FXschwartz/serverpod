@@ -469,13 +469,22 @@ class StudentRepository {
   /// Deletes all [Student]s in the list and returns the deleted rows.
   /// This is an atomic operation, meaning that if one of the rows fail to
   /// be deleted, none of the rows will be deleted.
+  ///
+  /// To specify the order of the returned deleted rows use [orderBy] or
+  /// [orderByList] when sorting by multiple columns.
   Future<List<Student>> delete(
     _i1.Session session,
     List<Student> rows, {
+    _i1.OrderByBuilder<StudentTable>? orderBy,
+    bool orderDescending = false,
+    _i1.OrderByListBuilder<StudentTable>? orderByList,
     _i1.Transaction? transaction,
   }) async {
     return session.db.delete<Student>(
       rows,
+      orderBy: orderBy?.call(Student.t),
+      orderByList: orderByList?.call(Student.t),
+      orderDescending: orderDescending,
       transaction: transaction,
     );
   }

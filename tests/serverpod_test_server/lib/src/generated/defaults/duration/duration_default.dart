@@ -443,13 +443,22 @@ class DurationDefaultRepository {
   /// Deletes all [DurationDefault]s in the list and returns the deleted rows.
   /// This is an atomic operation, meaning that if one of the rows fail to
   /// be deleted, none of the rows will be deleted.
+  ///
+  /// To specify the order of the returned deleted rows use [orderBy] or
+  /// [orderByList] when sorting by multiple columns.
   Future<List<DurationDefault>> delete(
     _i1.Session session,
     List<DurationDefault> rows, {
+    _i1.OrderByBuilder<DurationDefaultTable>? orderBy,
+    bool orderDescending = false,
+    _i1.OrderByListBuilder<DurationDefaultTable>? orderByList,
     _i1.Transaction? transaction,
   }) async {
     return session.db.delete<DurationDefault>(
       rows,
+      orderBy: orderBy?.call(DurationDefault.t),
+      orderByList: orderByList?.call(DurationDefault.t),
+      orderDescending: orderDescending,
       transaction: transaction,
     );
   }

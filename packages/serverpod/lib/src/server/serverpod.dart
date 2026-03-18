@@ -841,6 +841,16 @@ class Serverpod {
   }) async {
     bool verified;
 
+    // Drop all reactive database call triggers before applying migrations
+    // Since triggers reference table/column names that may change.
+    try {
+      await _dropAllReactiveTriggers();
+    } catch (e, _) {
+      _internalLogVerbose(
+        'Failed to drop reactive triggers before migration: $e',
+      );
+    }
+
     try {
       _internalLogVerbose('Initializing migration manager.');
       var migrationManager = ServerMigrationManager(Directory.current);
@@ -1337,6 +1347,28 @@ class Serverpod {
         'loggingMode: ${loggingMode.name}\n'
         'applyMigrations: $applyMigrations\n'
         'applyRepairMigration: $applyRepairMigration';
+  }
+
+  Future<void> _dropAllReactiveTriggers() async {
+    final result = await internalSession.db.unsafeQuery(
+      'SELECT tgname, relname FROM pg_trigger '
+      'JOIN pg_class ON pg_trigger.tgrelid = pg_class.oid '
+      "WHERE tgname LIKE '_serverpod_reactive_%' "
+      'AND NOT tgisinternal;',
+    );
+
+    for (var row in result) {
+      var triggerName = row[0] as String;
+      var tableName = row[1] as String;
+      var functionName = '${triggerName}_fn';
+
+      await internalSession.db.unsafeExecute(
+        'DROP TRIGGER IF EXISTS "$triggerName" ON "$tableName";',
+      );
+      await internalSession.db.unsafeExecute(
+        'DROP FUNCTION IF EXISTS "$functionName"();',
+      );
+    }
   }
 
   /// The health check service for orchestrator probes.

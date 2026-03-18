@@ -114,7 +114,19 @@ abstract class FutureCallClassAnalyzer {
   static bool isFutureCallClass(ClassElement element) {
     if (!element.isConstructable && !element.isAbstract) return false;
     if (element.isExecutableFutureCall) return false;
+    if (_isReactiveDatabaseCall(element)) return false;
     return isFutureCallInterface(element);
+  }
+
+  /// Returns `true` if the class is or extends `ReactiveDatabaseCall`.
+  ///
+  /// Reactive database calls extend `FutureCall` but are not spec classes
+  /// for future call code generation. They have their own lifecycle.
+  static bool _isReactiveDatabaseCall(ClassElement element) {
+    if (element.name == 'ReactiveDatabaseCall') return true;
+    return element.allSupertypes.any(
+      (s) => s.element.name == 'ReactiveDatabaseCall',
+    );
   }
 
   /// Returns `true` if the class extends the Serverpod `FutureCall` base class.

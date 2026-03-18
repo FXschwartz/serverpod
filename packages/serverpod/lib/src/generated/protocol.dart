@@ -25,16 +25,16 @@ import 'database_migration_version.dart' as _i12;
 import 'distributed_cache_entry.dart' as _i13;
 import 'exceptions/access_denied.dart' as _i14;
 import 'exceptions/file_not_found.dart' as _i15;
-import 'future_call_claim_entry.dart' as _i16;
-import 'future_call_entry.dart' as _i17;
-import 'log_entry.dart' as _i18;
-import 'log_level.dart' as _i19;
-import 'log_result.dart' as _i20;
-import 'log_settings.dart' as _i21;
-import 'log_settings_override.dart' as _i22;
-import 'message_log_entry.dart' as _i23;
-import 'method_info.dart' as _i24;
-import 'query_log_entry.dart' as _i25;
+import 'future_call_entry.dart' as _i16;
+import 'log_entry.dart' as _i17;
+import 'log_level.dart' as _i18;
+import 'log_result.dart' as _i19;
+import 'log_settings.dart' as _i20;
+import 'log_settings_override.dart' as _i21;
+import 'message_log_entry.dart' as _i22;
+import 'method_info.dart' as _i23;
+import 'query_log_entry.dart' as _i24;
+import 'reactive_database_call_entry.dart' as _i25;
 import 'readwrite_test.dart' as _i26;
 import 'runtime_settings.dart' as _i27;
 import 'server_health_connection_info.dart' as _i28;
@@ -60,7 +60,6 @@ export 'database_migration_version.dart';
 export 'distributed_cache_entry.dart';
 export 'exceptions/access_denied.dart';
 export 'exceptions/file_not_found.dart';
-export 'future_call_claim_entry.dart';
 export 'future_call_entry.dart';
 export 'log_entry.dart';
 export 'log_level.dart';
@@ -70,6 +69,7 @@ export 'log_settings_override.dart';
 export 'message_log_entry.dart';
 export 'method_info.dart';
 export 'query_log_entry.dart';
+export 'reactive_database_call_entry.dart';
 export 'readwrite_test.dart';
 export 'runtime_settings.dart';
 export 'server_health_connection_info.dart';
@@ -317,61 +317,6 @@ class Protocol extends _i1.SerializationManagerServer {
           ],
           type: 'btree',
           isUnique: false,
-          isPrimary: false,
-        ),
-      ],
-      managed: true,
-    ),
-    _i2.TableDefinition(
-      name: 'serverpod_future_call_claim',
-      dartName: 'FutureCallClaimEntry',
-      schema: 'public',
-      module: 'serverpod',
-      columns: [
-        _i2.ColumnDefinition(
-          name: 'id',
-          columnType: _i2.ColumnType.bigint,
-          isNullable: false,
-          dartType: 'int?',
-          columnDefault: 'serial',
-        ),
-        _i2.ColumnDefinition(
-          name: 'futureCallId',
-          columnType: _i2.ColumnType.bigint,
-          isNullable: true,
-          dartType: 'int?',
-        ),
-        _i2.ColumnDefinition(
-          name: 'lastHeartbeatTime',
-          columnType: _i2.ColumnType.timestampWithoutTimeZone,
-          isNullable: false,
-          dartType: 'DateTime',
-        ),
-      ],
-      foreignKeys: [
-        _i2.ForeignKeyDefinition(
-          constraintName: 'serverpod_future_call_claim_fk_0',
-          columns: ['futureCallId'],
-          referenceTable: 'serverpod_future_call',
-          referenceTableSchema: 'public',
-          referenceColumns: ['id'],
-          onUpdate: _i2.ForeignKeyAction.noAction,
-          onDelete: _i2.ForeignKeyAction.cascade,
-          matchType: null,
-        ),
-      ],
-      indexes: [
-        _i2.IndexDefinition(
-          indexName: 'future_call_unique_idx',
-          tableSpace: null,
-          elements: [
-            _i2.IndexElementDefinition(
-              type: _i2.IndexElementDefinitionType.column,
-              definition: 'futureCallId',
-            ),
-          ],
-          type: 'btree',
-          isUnique: true,
           isPrimary: false,
         ),
       ],
@@ -927,6 +872,95 @@ class Protocol extends _i1.SerializationManagerServer {
       managed: true,
     ),
     _i2.TableDefinition(
+      name: 'serverpod_reactive_db_call',
+      dartName: 'ReactiveDatabaseCallEntry',
+      schema: 'public',
+      module: 'serverpod',
+      columns: [
+        _i2.ColumnDefinition(
+          name: 'id',
+          columnType: _i2.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault:
+              'nextval(\'serverpod_reactive_db_call_id_seq\'::regclass)',
+        ),
+        _i2.ColumnDefinition(
+          name: 'handlerName',
+          columnType: _i2.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _i2.ColumnDefinition(
+          name: 'sourceTable',
+          columnType: _i2.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _i2.ColumnDefinition(
+          name: 'operation',
+          columnType: _i2.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _i2.ColumnDefinition(
+          name: 'rowData',
+          columnType: _i2.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _i2.ColumnDefinition(
+          name: 'createdAt',
+          columnType: _i2.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+      ],
+      foreignKeys: [],
+      indexes: [
+        _i2.IndexDefinition(
+          indexName: 'serverpod_reactive_db_call_pkey',
+          tableSpace: null,
+          elements: [
+            _i2.IndexElementDefinition(
+              type: _i2.IndexElementDefinitionType.column,
+              definition: 'id',
+            ),
+          ],
+          type: 'btree',
+          isUnique: true,
+          isPrimary: true,
+        ),
+        _i2.IndexDefinition(
+          indexName: 'serverpod_reactive_db_call_created_at_idx',
+          tableSpace: null,
+          elements: [
+            _i2.IndexElementDefinition(
+              type: _i2.IndexElementDefinitionType.column,
+              definition: 'createdAt',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+        _i2.IndexDefinition(
+          indexName: 'serverpod_reactive_db_call_handler_name_idx',
+          tableSpace: null,
+          elements: [
+            _i2.IndexElementDefinition(
+              type: _i2.IndexElementDefinitionType.column,
+              definition: 'handlerName',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _i2.TableDefinition(
       name: 'serverpod_readwrite_test',
       dartName: 'ReadWriteTestEntry',
       schema: 'public',
@@ -1217,35 +1251,35 @@ class Protocol extends _i1.SerializationManagerServer {
     if (t == _i15.FileNotFoundException) {
       return _i15.FileNotFoundException.fromJson(data) as T;
     }
-    if (t == _i16.FutureCallClaimEntry) {
-      return _i16.FutureCallClaimEntry.fromJson(data) as T;
+    if (t == _i16.FutureCallEntry) {
+      return _i16.FutureCallEntry.fromJson(data) as T;
     }
-    if (t == _i17.FutureCallEntry) {
-      return _i17.FutureCallEntry.fromJson(data) as T;
+    if (t == _i17.LogEntry) {
+      return _i17.LogEntry.fromJson(data) as T;
     }
-    if (t == _i18.LogEntry) {
-      return _i18.LogEntry.fromJson(data) as T;
+    if (t == _i18.LogLevel) {
+      return _i18.LogLevel.fromJson(data) as T;
     }
-    if (t == _i19.LogLevel) {
-      return _i19.LogLevel.fromJson(data) as T;
+    if (t == _i19.LogResult) {
+      return _i19.LogResult.fromJson(data) as T;
     }
-    if (t == _i20.LogResult) {
-      return _i20.LogResult.fromJson(data) as T;
+    if (t == _i20.LogSettings) {
+      return _i20.LogSettings.fromJson(data) as T;
     }
-    if (t == _i21.LogSettings) {
-      return _i21.LogSettings.fromJson(data) as T;
+    if (t == _i21.LogSettingsOverride) {
+      return _i21.LogSettingsOverride.fromJson(data) as T;
     }
-    if (t == _i22.LogSettingsOverride) {
-      return _i22.LogSettingsOverride.fromJson(data) as T;
+    if (t == _i22.MessageLogEntry) {
+      return _i22.MessageLogEntry.fromJson(data) as T;
     }
-    if (t == _i23.MessageLogEntry) {
-      return _i23.MessageLogEntry.fromJson(data) as T;
+    if (t == _i23.MethodInfo) {
+      return _i23.MethodInfo.fromJson(data) as T;
     }
-    if (t == _i24.MethodInfo) {
-      return _i24.MethodInfo.fromJson(data) as T;
+    if (t == _i24.QueryLogEntry) {
+      return _i24.QueryLogEntry.fromJson(data) as T;
     }
-    if (t == _i25.QueryLogEntry) {
-      return _i25.QueryLogEntry.fromJson(data) as T;
+    if (t == _i25.ReactiveDatabaseCallEntry) {
+      return _i25.ReactiveDatabaseCallEntry.fromJson(data) as T;
     }
     if (t == _i26.ReadWriteTestEntry) {
       return _i26.ReadWriteTestEntry.fromJson(data) as T;
@@ -1334,37 +1368,39 @@ class Protocol extends _i1.SerializationManagerServer {
       return (data != null ? _i15.FileNotFoundException.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i16.FutureCallClaimEntry?>()) {
-      return (data != null ? _i16.FutureCallClaimEntry.fromJson(data) : null)
+    if (t == _i1.getType<_i16.FutureCallEntry?>()) {
+      return (data != null ? _i16.FutureCallEntry.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i17.LogEntry?>()) {
+      return (data != null ? _i17.LogEntry.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i18.LogLevel?>()) {
+      return (data != null ? _i18.LogLevel.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i19.LogResult?>()) {
+      return (data != null ? _i19.LogResult.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i20.LogSettings?>()) {
+      return (data != null ? _i20.LogSettings.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i21.LogSettingsOverride?>()) {
+      return (data != null ? _i21.LogSettingsOverride.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i17.FutureCallEntry?>()) {
-      return (data != null ? _i17.FutureCallEntry.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i22.MessageLogEntry?>()) {
+      return (data != null ? _i22.MessageLogEntry.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i18.LogEntry?>()) {
-      return (data != null ? _i18.LogEntry.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i23.MethodInfo?>()) {
+      return (data != null ? _i23.MethodInfo.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i19.LogLevel?>()) {
-      return (data != null ? _i19.LogLevel.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i24.QueryLogEntry?>()) {
+      return (data != null ? _i24.QueryLogEntry.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i20.LogResult?>()) {
-      return (data != null ? _i20.LogResult.fromJson(data) : null) as T;
-    }
-    if (t == _i1.getType<_i21.LogSettings?>()) {
-      return (data != null ? _i21.LogSettings.fromJson(data) : null) as T;
-    }
-    if (t == _i1.getType<_i22.LogSettingsOverride?>()) {
-      return (data != null ? _i22.LogSettingsOverride.fromJson(data) : null)
+    if (t == _i1.getType<_i25.ReactiveDatabaseCallEntry?>()) {
+      return (data != null
+              ? _i25.ReactiveDatabaseCallEntry.fromJson(data)
+              : null)
           as T;
-    }
-    if (t == _i1.getType<_i23.MessageLogEntry?>()) {
-      return (data != null ? _i23.MessageLogEntry.fromJson(data) : null) as T;
-    }
-    if (t == _i1.getType<_i24.MethodInfo?>()) {
-      return (data != null ? _i24.MethodInfo.fromJson(data) : null) as T;
-    }
-    if (t == _i1.getType<_i25.QueryLogEntry?>()) {
-      return (data != null ? _i25.QueryLogEntry.fromJson(data) : null) as T;
     }
     if (t == _i1.getType<_i26.ReadWriteTestEntry?>()) {
       return (data != null ? _i26.ReadWriteTestEntry.fromJson(data) : null)
@@ -1418,13 +1454,13 @@ class Protocol extends _i1.SerializationManagerServer {
               .toList()
           as T;
     }
-    if (t == List<_i18.LogEntry>) {
-      return (data as List).map((e) => deserialize<_i18.LogEntry>(e)).toList()
+    if (t == List<_i17.LogEntry>) {
+      return (data as List).map((e) => deserialize<_i17.LogEntry>(e)).toList()
           as T;
     }
-    if (t == List<_i22.LogSettingsOverride>) {
+    if (t == List<_i21.LogSettingsOverride>) {
       return (data as List)
-              .map((e) => deserialize<_i22.LogSettingsOverride>(e))
+              .map((e) => deserialize<_i21.LogSettingsOverride>(e))
               .toList()
           as T;
     }
@@ -1440,15 +1476,15 @@ class Protocol extends _i1.SerializationManagerServer {
               .toList()
           as T;
     }
-    if (t == List<_i25.QueryLogEntry>) {
+    if (t == List<_i24.QueryLogEntry>) {
       return (data as List)
-              .map((e) => deserialize<_i25.QueryLogEntry>(e))
+              .map((e) => deserialize<_i24.QueryLogEntry>(e))
               .toList()
           as T;
     }
-    if (t == List<_i23.MessageLogEntry>) {
+    if (t == List<_i22.MessageLogEntry>) {
       return (data as List)
-              .map((e) => deserialize<_i23.MessageLogEntry>(e))
+              .map((e) => deserialize<_i22.MessageLogEntry>(e))
               .toList()
           as T;
     }
@@ -1488,16 +1524,16 @@ class Protocol extends _i1.SerializationManagerServer {
       _i13.DistributedCacheEntry => 'DistributedCacheEntry',
       _i14.AccessDeniedException => 'AccessDeniedException',
       _i15.FileNotFoundException => 'FileNotFoundException',
-      _i16.FutureCallClaimEntry => 'FutureCallClaimEntry',
-      _i17.FutureCallEntry => 'FutureCallEntry',
-      _i18.LogEntry => 'LogEntry',
-      _i19.LogLevel => 'LogLevel',
-      _i20.LogResult => 'LogResult',
-      _i21.LogSettings => 'LogSettings',
-      _i22.LogSettingsOverride => 'LogSettingsOverride',
-      _i23.MessageLogEntry => 'MessageLogEntry',
-      _i24.MethodInfo => 'MethodInfo',
-      _i25.QueryLogEntry => 'QueryLogEntry',
+      _i16.FutureCallEntry => 'FutureCallEntry',
+      _i17.LogEntry => 'LogEntry',
+      _i18.LogLevel => 'LogLevel',
+      _i19.LogResult => 'LogResult',
+      _i20.LogSettings => 'LogSettings',
+      _i21.LogSettingsOverride => 'LogSettingsOverride',
+      _i22.MessageLogEntry => 'MessageLogEntry',
+      _i23.MethodInfo => 'MethodInfo',
+      _i24.QueryLogEntry => 'QueryLogEntry',
+      _i25.ReactiveDatabaseCallEntry => 'ReactiveDatabaseCallEntry',
       _i26.ReadWriteTestEntry => 'ReadWriteTestEntry',
       _i27.RuntimeSettings => 'RuntimeSettings',
       _i28.ServerHealthConnectionInfo => 'ServerHealthConnectionInfo',
@@ -1548,26 +1584,26 @@ class Protocol extends _i1.SerializationManagerServer {
         return 'AccessDeniedException';
       case _i15.FileNotFoundException():
         return 'FileNotFoundException';
-      case _i16.FutureCallClaimEntry():
-        return 'FutureCallClaimEntry';
-      case _i17.FutureCallEntry():
+      case _i16.FutureCallEntry():
         return 'FutureCallEntry';
-      case _i18.LogEntry():
+      case _i17.LogEntry():
         return 'LogEntry';
-      case _i19.LogLevel():
+      case _i18.LogLevel():
         return 'LogLevel';
-      case _i20.LogResult():
+      case _i19.LogResult():
         return 'LogResult';
-      case _i21.LogSettings():
+      case _i20.LogSettings():
         return 'LogSettings';
-      case _i22.LogSettingsOverride():
+      case _i21.LogSettingsOverride():
         return 'LogSettingsOverride';
-      case _i23.MessageLogEntry():
+      case _i22.MessageLogEntry():
         return 'MessageLogEntry';
-      case _i24.MethodInfo():
+      case _i23.MethodInfo():
         return 'MethodInfo';
-      case _i25.QueryLogEntry():
+      case _i24.QueryLogEntry():
         return 'QueryLogEntry';
+      case _i25.ReactiveDatabaseCallEntry():
+        return 'ReactiveDatabaseCallEntry';
       case _i26.ReadWriteTestEntry():
         return 'ReadWriteTestEntry';
       case _i27.RuntimeSettings():
@@ -1637,35 +1673,35 @@ class Protocol extends _i1.SerializationManagerServer {
     if (dataClassName == 'FileNotFoundException') {
       return deserialize<_i15.FileNotFoundException>(data['data']);
     }
-    if (dataClassName == 'FutureCallClaimEntry') {
-      return deserialize<_i16.FutureCallClaimEntry>(data['data']);
-    }
     if (dataClassName == 'FutureCallEntry') {
-      return deserialize<_i17.FutureCallEntry>(data['data']);
+      return deserialize<_i16.FutureCallEntry>(data['data']);
     }
     if (dataClassName == 'LogEntry') {
-      return deserialize<_i18.LogEntry>(data['data']);
+      return deserialize<_i17.LogEntry>(data['data']);
     }
     if (dataClassName == 'LogLevel') {
-      return deserialize<_i19.LogLevel>(data['data']);
+      return deserialize<_i18.LogLevel>(data['data']);
     }
     if (dataClassName == 'LogResult') {
-      return deserialize<_i20.LogResult>(data['data']);
+      return deserialize<_i19.LogResult>(data['data']);
     }
     if (dataClassName == 'LogSettings') {
-      return deserialize<_i21.LogSettings>(data['data']);
+      return deserialize<_i20.LogSettings>(data['data']);
     }
     if (dataClassName == 'LogSettingsOverride') {
-      return deserialize<_i22.LogSettingsOverride>(data['data']);
+      return deserialize<_i21.LogSettingsOverride>(data['data']);
     }
     if (dataClassName == 'MessageLogEntry') {
-      return deserialize<_i23.MessageLogEntry>(data['data']);
+      return deserialize<_i22.MessageLogEntry>(data['data']);
     }
     if (dataClassName == 'MethodInfo') {
-      return deserialize<_i24.MethodInfo>(data['data']);
+      return deserialize<_i23.MethodInfo>(data['data']);
     }
     if (dataClassName == 'QueryLogEntry') {
-      return deserialize<_i25.QueryLogEntry>(data['data']);
+      return deserialize<_i24.QueryLogEntry>(data['data']);
+    }
+    if (dataClassName == 'ReactiveDatabaseCallEntry') {
+      return deserialize<_i25.ReactiveDatabaseCallEntry>(data['data']);
     }
     if (dataClassName == 'ReadWriteTestEntry') {
       return deserialize<_i26.ReadWriteTestEntry>(data['data']);
@@ -1709,18 +1745,18 @@ class Protocol extends _i1.SerializationManagerServer {
         return _i9.CloudStorageDirectUploadEntry.t;
       case _i12.DatabaseMigrationVersion:
         return _i12.DatabaseMigrationVersion.t;
-      case _i16.FutureCallClaimEntry:
-        return _i16.FutureCallClaimEntry.t;
-      case _i17.FutureCallEntry:
-        return _i17.FutureCallEntry.t;
-      case _i18.LogEntry:
-        return _i18.LogEntry.t;
-      case _i23.MessageLogEntry:
-        return _i23.MessageLogEntry.t;
-      case _i24.MethodInfo:
-        return _i24.MethodInfo.t;
-      case _i25.QueryLogEntry:
-        return _i25.QueryLogEntry.t;
+      case _i16.FutureCallEntry:
+        return _i16.FutureCallEntry.t;
+      case _i17.LogEntry:
+        return _i17.LogEntry.t;
+      case _i22.MessageLogEntry:
+        return _i22.MessageLogEntry.t;
+      case _i23.MethodInfo:
+        return _i23.MethodInfo.t;
+      case _i24.QueryLogEntry:
+        return _i24.QueryLogEntry.t;
+      case _i25.ReactiveDatabaseCallEntry:
+        return _i25.ReactiveDatabaseCallEntry.t;
       case _i26.ReadWriteTestEntry:
         return _i26.ReadWriteTestEntry.t;
       case _i27.RuntimeSettings:

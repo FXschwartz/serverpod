@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:serverpod_serialization/serverpod_serialization.dart';
 
 import '../../serverpod_database.dart';
+import 'trigger_expressions.dart';
 
 /// A function that returns a [Column] for a [Table].
 typedef ColumnSelections<T extends Table> = List<Column> Function(T);
@@ -48,6 +49,14 @@ abstract class Column<T> {
   String toString() {
     return '"${table.queryPrefix}"."$_columnName"';
   }
+
+  /// Creates an [Expression] that evaluates to true when this column's value
+  /// has changed in a PostgreSQL trigger context.
+  ///
+  /// Produces: `OLD."column_name" IS DISTINCT FROM NEW."column_name"`
+  ///
+  /// Only valid in [ReactiveDatabaseCall.condition] expressions.
+  Expression hasChanged() => HasChangedExpression(this);
 }
 
 /// A [Column] holding [ByteData].

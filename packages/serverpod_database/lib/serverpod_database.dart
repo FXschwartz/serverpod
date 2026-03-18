@@ -12,6 +12,7 @@ export 'src/concepts/row_lock.dart';
 export 'src/concepts/runtime_parameters.dart';
 export 'src/concepts/table.dart';
 export 'src/concepts/transaction.dart';
+export 'src/concepts/trigger_expressions.dart';
 export 'src/concepts/update_table.dart';
 export 'src/database.dart';
 export 'src/extensions.dart';

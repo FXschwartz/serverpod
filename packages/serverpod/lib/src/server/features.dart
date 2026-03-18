@@ -34,6 +34,9 @@ class Features {
   /// Returns true if the web server is enabled.
   static bool get enableFutureCalls => enableDatabase;
 
+  /// Returns true if reactive database calls are enabled.
+  static bool get enableReactiveDatabaseCalls => enableDatabase;
+
   /// Returns true if the web server is enabled.
   static bool get enableScheduledHealthChecks => enableDatabase;
 

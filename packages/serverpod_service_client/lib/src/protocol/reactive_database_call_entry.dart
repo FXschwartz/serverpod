@@ -12,7 +12,7 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:serverpod_client/serverpod_client.dart' as _i1;
 
-/// An entry in the reactive database call outbox, created by PostgreSQL
+/// An entry in the reactive future call outbox, created by PostgreSQL
 /// triggers when watched data changes.
 abstract class ReactiveDatabaseCallEntry implements _i1.SerializableModel {
   ReactiveDatabaseCallEntry._({
@@ -53,7 +53,7 @@ abstract class ReactiveDatabaseCallEntry implements _i1.SerializableModel {
   /// the id will be null.
   int? id;
 
-  /// Name of the ReactiveDatabaseCall handler to invoke.
+  /// Name of the ReactiveFutureCall handler to invoke.
   String handlerName;
 
   /// Source table that was modified.

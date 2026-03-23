@@ -1,6 +1,6 @@
 import 'package:serverpod_database/serverpod_database.dart';
 
-/// Builds PostgreSQL trigger and function DDL for [ReactiveDatabaseCall]s.
+/// Builds PostgreSQL trigger and function DDL for [ReactiveFutureCall]s.
 ///
 /// Converts Serverpod [Expression]s into trigger WHEN clauses by replacing
 /// table-qualified column references with `NEW.` prefixed references.
@@ -60,35 +60,36 @@ class TriggerSqlBuilder {
   /// Builds the CREATE OR REPLACE FUNCTION DDL.
   String buildFunctionSql() {
     return '''
-  CREATE OR REPLACE FUNCTION "$_functionName"()
-  RETURNS TRIGGER AS \$\$
-  BEGIN
-    INSERT INTO "serverpod_reactive_db_call"
-      ("handlerName", "sourceTable", "operation", "rowData", "createdAt")
-    VALUES (
-      '$handlerName',
-      TG_TABLE_NAME,
-      TG_OP,
-      CASE WHEN TG_OP = 'DELETE' THEN row_to_json(OLD.*) ELSE row_to_json(NEW.*) END,
-      NOW()
-    );
-    RETURN CASE WHEN TG_OP = 'DELETE' THEN OLD ELSE NEW END;
-  END;
-  \$\$ LANGUAGE plpgsql;''';
+CREATE OR REPLACE FUNCTION "$_functionName"()
+RETURNS TRIGGER AS \$\$
+BEGIN
+  INSERT INTO "serverpod_reactive_db_call"
+    ("handlerName", "sourceTable", "operation", "rowData", "createdAt")
+  VALUES (
+    '$handlerName',
+    TG_TABLE_NAME,
+    TG_OP,
+    CASE WHEN TG_OP = 'DELETE' THEN row_to_json(OLD.*) ELSE row_to_json(NEW.*) END,
+    NOW()
+  );
+  RETURN CASE WHEN TG_OP = 'DELETE' THEN OLD ELSE NEW END;
+END;
+\$\$ LANGUAGE plpgsql;''';
   }
 
   /// Builds the CREATE OR REPLACE TRIGGER DDL.
   String buildTriggerSql() {
     var whenClause = '';
     if (condition != null) {
-      whenClause = '\nWHEN (${convertExpressionToWhenClause(condition!)})';
+      whenClause =
+          '\nWHEN (${convertExpressionToWhenClause(condition!)})';
     }
 
     return '''
-  CREATE OR REPLACE TRIGGER "$_triggerName"
-  AFTER $_triggerEvents ON "$tableName"
-  FOR EACH ROW$whenClause
-  EXECUTE FUNCTION "$_functionName"();''';
+CREATE OR REPLACE TRIGGER "$_triggerName"
+AFTER $_triggerEvents ON "$tableName"
+FOR EACH ROW$whenClause
+EXECUTE FUNCTION "$_functionName"();''';
   }
 
   /// Builds both the function and trigger DDL statements.

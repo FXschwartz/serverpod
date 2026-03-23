@@ -1,13 +1,14 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:meta/meta.dart';
 import 'package:serverpod/protocol.dart';
 import 'package:serverpod/serverpod.dart';
-
 import 'future_call_diagnostics_service.dart';
 import 'future_call_scanner.dart';
 import 'serverpod_task_scheduler.dart';
+import 'trigger_sql_builder.dart';
 
 /// A function that builds a [Session] for a [FutureCall].
 typedef FutureCallSessionBuilder = Session Function(String futureCallName);
@@ -30,6 +31,7 @@ typedef InitializeFutureCall =
 /// - Cancelling scheduled future calls.
 /// - Registering future call handlers.
 /// - Monitoring and executing overdue future calls.
+/// - Managing reactive future calls that respond to database changes.
 class FutureCallManager {
   final Session _internalSession;
   final Session _logSession;
@@ -39,11 +41,15 @@ class FutureCallManager {
   final SerializationManager _serializationManager;
 
   final _futureCalls = <String, FutureCall>{};
+  final _reactiveFutureCalls = <String, ReactiveFutureCall>{};
   final FutureCallDiagnosticsService _diagnosticsService;
 
   late final ServerpodTaskScheduler _scheduler;
   late final FutureCallScanner _scanner;
   final Duration _heartbeatInterval;
+
+  Timer? _reactiveTimer;
+  var _reactiveScanCompleter = Completer<void>()..complete();
 
   /// Tracks whether start() was called but the scanner hasn't been started
   /// yet because there were no registered future calls at the time.
@@ -95,7 +101,7 @@ class FutureCallManager {
   /// Cancels a [FutureCall] with the specified [identifier]. If no future
   /// call with the given identifier exists, this method has no effect.
   Future<void> cancelFutureCall(String identifier) async {
-    var session = _internalSession;
+    final session = _internalSession;
 
     await FutureCallEntry.db.deleteWhere(
       session,
@@ -106,25 +112,35 @@ class FutureCallManager {
   /// Registers a [FutureCall] with the manager. This associates a [FutureCall]
   /// implementation with a specific [name].
   ///
-  /// Throws an exception if a future call with the same name is already registered.
+  /// If the [futureCall] is a [ReactiveFutureCall], it is registered
+  /// separately and its database triggers will be created when the manager
+  /// starts.
+  ///
+  /// Throws an exception if a future call with the same name is already
+  /// registered.
   ///
   /// If [start] has been called previously but the scanner hasn't started yet
   /// (because there were no registered future calls), this will trigger the
   /// scanner to begin scanning for overdue future calls.
   void registerFutureCall(FutureCall futureCall, String name) {
-    if (_futureCalls.containsKey(name)) {
+    if (_futureCalls.containsKey(name) ||
+        _reactiveFutureCalls.containsKey(name)) {
       throw Exception('Added future call with duplicate name ($name)');
     }
 
     _initializeFutureCall(futureCall, name);
 
-    _futureCalls[name] = futureCall;
+    if (futureCall is ReactiveFutureCall) {
+      _reactiveFutureCalls[name] = futureCall;
+    } else {
+      _futureCalls[name] = futureCall;
 
-    // If start() was called but we deferred starting the scanner,
-    // start it now that we have a registered future call.
-    if (_hasPendingStart) {
-      _hasPendingStart = false;
-      _scanner.start();
+      // If start() was called but we deferred starting the scanner,
+      // start it now that we have a registered future call.
+      if (_hasPendingStart) {
+        _hasPendingStart = false;
+        _scanner.start();
+      }
     }
   }
 
@@ -168,7 +184,7 @@ class FutureCallManager {
       serialization = SerializationManager.encode(object.toJson());
     }
 
-    var entry = FutureCallEntry(
+    final entry = FutureCallEntry(
       name: name,
       serializedObject: serialization,
       time: time,
@@ -176,7 +192,7 @@ class FutureCallManager {
       identifier: identifier,
     );
 
-    var session = _internalSession;
+    final session = _internalSession;
     await FutureCallEntry.db.insertRow(session, entry);
   }
 
@@ -186,12 +202,20 @@ class FutureCallManager {
   /// If no future calls are registered, the scanner will not start immediately.
   /// Instead, the scanner will be started when the first future call is
   /// registered via [registerFutureCall].
+  ///
+  /// If reactive future calls are registered, their database triggers are
+  /// created and the outbox scanner is started.
   Future<void> start() async {
     await _checkBrokenFutureCalls();
     if (_futureCalls.isNotEmpty) {
       _scanner.start();
     } else {
       _hasPendingStart = true;
+    }
+
+    if (_reactiveFutureCalls.isNotEmpty) {
+      await _initializeReactiveTriggers();
+      _startReactiveScanner();
     }
   }
 
@@ -200,8 +224,12 @@ class FutureCallManager {
   Future<void> stop({bool unregisterAll = false}) async {
     _hasPendingStart = false;
     await _scanner.stop();
+    await _stopReactiveScanner();
     await _scheduler.drain();
-    if (unregisterAll) _futureCalls.clear();
+    if (unregisterAll) {
+      _futureCalls.clear();
+      _reactiveFutureCalls.clear();
+    }
     _heartbeatTimers.forEach(_cancelHeartbeatTimer);
   }
 
@@ -372,6 +400,156 @@ class FutureCallManager {
         _internalSession,
         where: (t) => t.id.equals(futureCallEntry.id),
       );
+    }
+  }
+
+  /// Creates database triggers for all registered reactive future calls and
+  /// cleans up orphaned triggers from previously registered handlers.
+  Future<void> _initializeReactiveTriggers() async {
+    for (final entry in _reactiveFutureCalls.entries) {
+      final builder = TriggerSqlBuilder(
+        handlerName: entry.key,
+        tableName: entry.value.tableName,
+        condition: entry.value.condition,
+      );
+
+      await _internalSession.db.unsafeExecute(builder.buildFunctionSql());
+      await _internalSession.db.unsafeExecute(builder.buildTriggerSql());
+    }
+    await _cleanupOrphanedTriggers();
+  }
+
+  /// Queries pg_trigger for triggers matching the `_serverpod_reactive_%`
+  /// naming convention and drops any that don't have a matching registered
+  /// handler.
+  Future<void> _cleanupOrphanedTriggers() async {
+    final result = await _internalSession.db.unsafeQuery(
+      'SELECT tgname, relname FROM pg_trigger '
+      'JOIN pg_class ON pg_trigger.tgrelid = pg_class.oid '
+      "WHERE tgname LIKE '_serverpod_reactive_%' "
+      'AND NOT tgisinternal;',
+    );
+
+    for (final row in result) {
+      final triggerName = row[0] as String;
+      final sourceTable = row[1] as String;
+      final handlerName =
+          triggerName.replaceFirst('_serverpod_reactive_', '');
+
+      if (!_reactiveFutureCalls.containsKey(handlerName)) {
+        await _internalSession.db.unsafeExecute(
+          TriggerSqlBuilder.buildDropTriggerSql(triggerName, sourceTable),
+        );
+        await _internalSession.db.unsafeExecute(
+          TriggerSqlBuilder.buildDropFunctionSql('${triggerName}_fn'),
+        );
+      }
+    }
+  }
+
+  void _startReactiveScanner() {
+    if (_reactiveTimer != null || _reactiveFutureCalls.isEmpty) return;
+
+    _reactiveTimer = Timer.periodic(
+      _config.scanInterval,
+      (_) => _scanReactiveOutbox(),
+    );
+  }
+
+  Future<void> _stopReactiveScanner() async {
+    _reactiveTimer?.cancel();
+    _reactiveTimer = null;
+    await _reactiveScanCompleter.future;
+  }
+
+  /// Scans the outbox table for reactive future call entries and dispatches
+  /// them to the appropriate handlers.
+  Future<void> _scanReactiveOutbox() async {
+    if (!_reactiveScanCompleter.isCompleted) return;
+    _reactiveScanCompleter = Completer<void>();
+
+    try {
+      final entries = await ReactiveDatabaseCallEntry.db.deleteWhere(
+        _internalSession,
+        where: (row) => row.id > const Expression(0),
+      );
+
+      if (entries.isNotEmpty) {
+        entries.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+
+        final grouped = <String, List<ReactiveDatabaseCallEntry>>{};
+        for (final entry in entries) {
+          grouped.putIfAbsent(entry.handlerName, () => []).add(entry);
+        }
+
+        for (final group in grouped.entries) {
+          final handler = _reactiveFutureCalls[group.key];
+          if (handler == null) {
+            _logSession.log(
+              'Reactive future call handler "${group.key}" not found. '
+              'Skipping ${group.value.length} entries.',
+              level: LogLevel.error,
+            );
+            continue;
+          }
+          await _dispatchReactiveCall(handler, group.key, group.value);
+        }
+      }
+    } catch (error, stackTrace) {
+      const message =
+          'Internal server error. Failed to scan reactive future call outbox.';
+
+      _diagnosticsService.submitFrameworkException(
+        error,
+        stackTrace,
+        message: message,
+      );
+
+      stderr.writeln('${DateTime.now().toUtc()} $message');
+      stderr.writeln('$error');
+      stderr.writeln('$stackTrace');
+    }
+
+    _reactiveScanCompleter.complete();
+  }
+
+  Future<void> _dispatchReactiveCall(
+    ReactiveFutureCall handler,
+    String handlerName,
+    List<ReactiveDatabaseCallEntry> entries,
+  ) async {
+    final session = _sessionBuilder(handlerName);
+
+    try {
+      final objects = entries
+          .map((e) => _deserializeRowData(e.rowData, handler.dataType))
+          .whereType<TableRow>()
+          .toList();
+
+      if (objects.isNotEmpty) {
+        await handler.react(session, objects);
+      }
+      await session.close();
+    } catch (error, stackTrace) {
+      _diagnosticsService.submitCallException(
+        error,
+        stackTrace,
+        session: session,
+      );
+      await session.close(error: error, stackTrace: stackTrace);
+    }
+  }
+
+  TableRow? _deserializeRowData(String rowDataJson, Type dataType) {
+    try {
+      final jsonData = jsonDecode(rowDataJson) as Map<String, dynamic>;
+      return _serializationManager.deserialize<TableRow>(jsonData, dataType);
+    } catch (error) {
+      stderr.writeln(
+        '${DateTime.now().toUtc()} Error deserializing reactive future '
+        'call row data: $error',
+      );
+      return null;
     }
   }
 

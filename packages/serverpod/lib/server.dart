@@ -21,4 +21,4 @@ export 'src/config/security_context_config.dart' show SecurityContextConfig;
 
 export 'package:serverpod_shared/serverpod_shared.dart'
     show ServerpodLoggingMode;
-export 'src/server/reactive_database_call_manager/reactive_database_call.dart';
+export 'src/server/future_call_manager/reactive_future_call.dart';

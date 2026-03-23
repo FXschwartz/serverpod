@@ -1,10 +1,10 @@
-### An entry in the reactive database call outbox, created by PostgreSQL
+### An entry in the reactive future call outbox, created by PostgreSQL
 ### triggers when watched data changes.
 class: ReactiveDatabaseCallEntry
 table: serverpod_reactive_db_call
 
 fields:
-    ### Name of the ReactiveDatabaseCall handler to invoke.
+    ### Name of the ReactiveFutureCall handler to invoke.
     handlerName: String
 
     ### Source table that was modified.

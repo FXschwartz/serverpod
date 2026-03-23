@@ -521,3 +521,13 @@ class ChildClassExplicitColumnRepository {
     );
   }
 }
+
+abstract class ChildClassExplicitColumnReactiveFutureCall
+    extends _i2.ReactiveFutureCall<ChildClassExplicitColumn> {
+  @override
+  String get tableName => 'child_table_explicit_column';
+
+  _i2.WhereExpressionBuilder<ChildClassExplicitColumnTable> get where;
+  @override
+  _i2.Expression? get condition => where(ChildClassExplicitColumn.t);
+}

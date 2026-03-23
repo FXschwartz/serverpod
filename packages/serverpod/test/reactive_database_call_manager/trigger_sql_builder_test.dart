@@ -1,4 +1,4 @@
-import 'package:serverpod/src/server/reactive_database_call_manager/trigger_sql_builder.dart';
+import 'package:serverpod/src/server/future_call_manager/trigger_sql_builder.dart';
 import 'package:serverpod_database/serverpod_database.dart';
 import 'package:serverpod_database/src/adapters/postgres/value_encoder.dart';
 import 'package:test/test.dart';

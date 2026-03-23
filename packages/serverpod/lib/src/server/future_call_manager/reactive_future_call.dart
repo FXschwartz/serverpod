@@ -1,6 +1,6 @@
 import 'package:serverpod_database/serverpod_database.dart';
 
-import '../future_call_manager/future_call.dart';
+import 'future_call.dart';
 import '../session.dart';
 
 /// A [FutureCall] that reacts to changes in the database.
@@ -10,8 +10,8 @@ import '../session.dart';
 /// the change is recorded in an outbox table and dispatched to [react].
 ///
 /// Typically, users extend a generated per-model intermediate class
-/// (e.g., `TripReactiveDatabaseCall`) rather than this class directly.
-abstract class ReactiveDatabaseCall<T extends TableRow> extends FutureCall<T> {
+/// (e.g., `TripReactiveFutureCall`) rather than this class directly.
+abstract class ReactiveFutureCall<T extends TableRow> extends FutureCall<T> {
   /// The database table this reactive call watches.
   String get tableName;
 

@@ -16,7 +16,7 @@ import 'package:serverpod/src/server/log_manager/log_cleanup.dart';
 import 'package:serverpod/src/server/log_manager/log_settings.dart';
 import 'package:serverpod/src/server/tasks/tasks.dart';
 import 'package:serverpod_shared/serverpod_shared.dart';
-import 'package:serverpod/src/server/reactive_database_call_manager/reactive_database_call_manager.dart';
+
 
 import '../authentication/default_authentication_handler.dart';
 import '../authentication/service_authentication.dart';
@@ -182,8 +182,6 @@ class Serverpod {
 
   FutureCallManager? _futureCallManager;
 
-  ReactiveDatabaseCallManager? _reactiveDatabaseCallManager;
-
   final TaskManagerImpl _requestReceivingShutdownTasks = TaskManagerImpl();
   final TaskManagerImpl _internalServicesShutdownTasks = TaskManagerImpl();
 
@@ -259,11 +257,6 @@ class Serverpod {
     _requestReceivingShutdownTasks.addTask(
       'Future Call Manager',
       () async => _futureCallManager?.stop(unregisterAll: true),
-    );
-
-    _requestReceivingShutdownTasks.addTask(
-      'Reactive Database Call Manager',
-      () async => _reactiveDatabaseCallManager?.stop(),
     );
 
     _internalServicesShutdownTasks.addTask(
@@ -631,15 +624,6 @@ class Serverpod {
       );
     }
 
-    if (Features.enableReactiveDatabaseCalls) {
-      _reactiveDatabaseCallManager = ReactiveDatabaseCallManager(
-        internalSession: internalSession,
-        sessionBuilder: (String handlerName) =>
-            FutureCallSession(server: server, futureCallName: handlerName),
-        serializationManager: serializationManager,
-      );
-    }
-
     if (Features.enableScheduledHealthChecks) {
       _healthCheckManager = HealthCheckManager(
         this,
@@ -807,12 +791,6 @@ class Serverpod {
         _futureCallManager!,
         serverId,
       );
-    }
-
-    if (_reactiveDatabaseCallManager != null) {
-      _internalLogVerbose('Initializing reactive database call triggers');
-      await _reactiveDatabaseCallManager!.initializeTriggers();
-      _reactiveDatabaseCallManager!.start();
     }
 
     // Start maintenance tasks. If we are running in maintenance mode, we

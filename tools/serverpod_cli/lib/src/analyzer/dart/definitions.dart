@@ -76,6 +76,15 @@ class ReactiveFutureCallDefinition {
 
   /// The file path where the reactive future call is defined.
   final String filePath;
+
+  @override
+  bool operator ==(Object other) =>
+      other is ReactiveFutureCallDefinition &&
+      other.className == className &&
+      other.filePath == filePath;
+
+  @override
+  int get hashCode => Object.hash(className, filePath);
 }
 
 /// Describes parameters of a [FutureCallMethodDefinition]

@@ -54,7 +54,7 @@ abstract class Column<T> {
   ///
   /// Produces: `OLD."column_name" IS DISTINCT FROM NEW."column_name"`
   ///
-  /// Only valid in [ReactiveDatabaseCall.condition] expressions.
+  /// Only valid in [ReactiveFutureCall.condition] expressions.
   Expression hasChanged() => HasChangedExpression(this);
 }
 

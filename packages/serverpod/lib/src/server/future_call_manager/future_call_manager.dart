@@ -54,6 +54,7 @@ class FutureCallManager {
   /// Tracks whether start() was called but the scanner hasn't been started
   /// yet because there were no registered future calls at the time.
   bool _hasPendingStart = false;
+  bool _isStarted = false;
 
   /// Collection of active claim heartbeat timers.
   final List<Timer> _heartbeatTimers = [];
@@ -132,6 +133,11 @@ class FutureCallManager {
 
     if (futureCall is ReactiveFutureCall) {
       _reactiveFutureCalls[name] = futureCall;
+
+      if (_isStarted) {
+        _initializeReactiveTriggerForCall(name, futureCall);
+        _startReactiveScanner();
+      }
     } else {
       _futureCalls[name] = futureCall;
 
@@ -213,15 +219,18 @@ class FutureCallManager {
       _hasPendingStart = true;
     }
 
+    await _initializeReactiveTriggers();
     if (_reactiveFutureCalls.isNotEmpty) {
-      await _initializeReactiveTriggers();
       _startReactiveScanner();
     }
+
+    _isStarted = true;
   }
 
   /// Stops the [FutureCallManager], preventing it from monitoring and
   /// executing overdue future calls.
   Future<void> stop({bool unregisterAll = false}) async {
+    _isStarted = false;
     _hasPendingStart = false;
     await _scanner.stop();
     await _stopReactiveScanner();
@@ -407,16 +416,24 @@ class FutureCallManager {
   /// cleans up orphaned triggers from previously registered handlers.
   Future<void> _initializeReactiveTriggers() async {
     for (final entry in _reactiveFutureCalls.entries) {
-      final builder = TriggerSqlBuilder(
-        handlerName: entry.key,
-        tableName: entry.value.tableName,
-        condition: entry.value.condition,
-      );
-
-      await _internalSession.db.unsafeExecute(builder.buildFunctionSql());
-      await _internalSession.db.unsafeExecute(builder.buildTriggerSql());
+      await _initializeReactiveTriggerForCall(entry.key, entry.value);
     }
     await _cleanupOrphanedTriggers();
+  }
+
+  /// Creates the database trigger and function for a single reactive call.
+  Future<void> _initializeReactiveTriggerForCall(
+    String handlerName,
+    ReactiveFutureCall call,
+  ) async {
+    final builder = TriggerSqlBuilder(
+      handlerName: handlerName,
+      tableName: call.tableName,
+      condition: call.condition,
+    );
+
+    await _internalSession.db.unsafeExecute(builder.buildFunctionSql());
+    await _internalSession.db.unsafeExecute(builder.buildTriggerSql());
   }
 
   /// Queries pg_trigger for triggers matching the `_serverpod_reactive_%`

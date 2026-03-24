@@ -60,7 +60,8 @@ class FutureCallsAnalyzer {
 
   /// The reactive future call definitions discovered during analysis.
   List<ReactiveFutureCallDefinition> get reactiveFutureCallDefinitions =>
-      _reactiveFutureCallDefinitions.toList();
+      _reactiveFutureCallDefinitions.toList()
+        ..sort((a, b) => a.className.compareTo(b.className));
 
   /// Inform the analyzer that the provided [filePaths] have been updated.
   ///

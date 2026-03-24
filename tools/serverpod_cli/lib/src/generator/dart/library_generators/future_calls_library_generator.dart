@@ -110,7 +110,10 @@ extension FutureCallsLibraryGenerator on LibraryGenerator {
                   ),
                 ])
                 ..body = Block.of([
-                  _buildRegisteredFutureCalls(protocolDefinition.futureCalls),
+                  _buildRegisteredFutureCalls(
+                    protocolDefinition.futureCalls,
+                    protocolDefinition.reactiveFutureCalls,
+                  ),
                   _buildFutureCallDispatchInitializer(),
                 ]),
             ),
@@ -225,13 +228,16 @@ extension FutureCallsLibraryGenerator on LibraryGenerator {
     ]);
   }
 
-  Code _buildRegisteredFutureCalls(List<FutureCallDefinition> futureCalls) {
+  Code _buildRegisteredFutureCalls(
+    List<FutureCallDefinition> futureCalls,
+    List<ReactiveFutureCallDefinition> reactiveFutureCalls,
+  ) {
     return refer('var registeredFutureCalls')
         .assign(
           literalMap(
             {
-              for (var futureCall in futureCalls)
-                for (var method in futureCall.methods)
+              for (final futureCall in futureCalls)
+                for (final method in futureCall.methods)
                   if (!futureCall.isAbstract)
                     _getFutureCallClassName(
                       futureCall.name,
@@ -239,6 +245,8 @@ extension FutureCallsLibraryGenerator on LibraryGenerator {
                     ): refer(
                       _getFutureCallClassName(futureCall.name, method.name),
                     ).call([]),
+              for (final reactiveCall in reactiveFutureCalls)
+                reactiveCall.className: refer(reactiveCall.className).call([]),
             },
             refer('String'),
             refer('FutureCall', serverpodUrl(true)),

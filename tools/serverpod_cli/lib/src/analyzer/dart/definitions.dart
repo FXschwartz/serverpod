@@ -63,6 +63,21 @@ final class FutureCallMethodDefinition extends MethodDefinition {
   });
 }
 
+/// Describes a reactive future call that responds to database changes.
+class ReactiveFutureCallDefinition {
+  /// Create a new [ReactiveFutureCallDefinition].
+  const ReactiveFutureCallDefinition({
+    required this.className,
+    required this.filePath,
+  });
+
+  /// The actual class name of the reactive future call.
+  final String className;
+
+  /// The file path where the reactive future call is defined.
+  final String filePath;
+}
+
 /// Describes parameters of a [FutureCallMethodDefinition]
 /// which should be used to generate [SerializableModel] interfaces.
 class FutureCallParameterDefinition {

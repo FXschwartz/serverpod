@@ -114,15 +114,20 @@ abstract class FutureCallClassAnalyzer {
   static bool isFutureCallClass(ClassElement element) {
     if (!element.isConstructable && !element.isAbstract) return false;
     if (element.isExecutableFutureCall) return false;
-    if (_isReactiveFutureCall(element)) return false;
+    if (isReactiveFutureCall(element)) return false;
     return isFutureCallInterface(element);
   }
 
+  /// Returns `true` if the class is a concrete user-written reactive future
+  /// call that should be registered.
+  static bool isReactiveFutureCallClass(ClassElement element) {
+    if (!element.isConstructable) return false;
+    if (element.isAbstract) return false;
+    return isReactiveFutureCall(element);
+  }
+
   /// Returns `true` if the class is or extends `ReactiveFutureCall`.
-  ///
-  /// Reactive future calls extend `FutureCall` but are not spec classes
-  /// for future call code generation. They have their own lifecycle.
-  static bool _isReactiveFutureCall(ClassElement element) {
+  static bool isReactiveFutureCall(ClassElement element) {
     if (element.name == 'ReactiveFutureCall') return true;
     return element.allSupertypes.any(
       (s) => s.element.name == 'ReactiveFutureCall',

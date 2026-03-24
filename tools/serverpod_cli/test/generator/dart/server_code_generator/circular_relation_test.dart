@@ -55,6 +55,7 @@ void main() {
         endpoints: [],
         models: models,
         futureCalls: [],
+        reactiveFutureCalls: [],
       );
 
       var codeMap = generator.generateProtocolCode(

@@ -52,6 +52,7 @@ void main() {
           endpoints: [],
           models: [],
           futureCalls: [abstractFutureCall],
+          reactiveFutureCalls: [],
         );
 
         codeMap = generator.generateProtocolCode(
@@ -132,6 +133,7 @@ void main() {
           endpoints: [],
           models: [],
           futureCalls: [abstractFutureCall, concreteFutureCall],
+          reactiveFutureCalls: [],
         );
 
         codeMap = generator.generateProtocolCode(

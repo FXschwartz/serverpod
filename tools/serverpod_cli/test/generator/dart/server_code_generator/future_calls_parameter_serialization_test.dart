@@ -87,6 +87,7 @@ void main() {
                 ])
                 .build(),
           ],
+          reactiveFutureCalls: [],
         );
 
         protocolCodeMap = generator.generateProtocolCode(

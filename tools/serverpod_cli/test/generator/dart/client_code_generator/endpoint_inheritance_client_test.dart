@@ -63,6 +63,7 @@ void main() {
         endpoints: [baseEndpoint, subclassEndpoint],
         models: [],
         futureCalls: [],
+        reactiveFutureCalls: [],
       );
 
       late var codeMap = generator.generateProtocolCode(
@@ -213,6 +214,7 @@ void main() {
         endpoints: [subclassEndpoint],
         models: [],
         futureCalls: [],
+        reactiveFutureCalls: [],
       );
 
       final customConfig = GeneratorConfigBuilder()

@@ -225,6 +225,7 @@ Future<GenerateResult> performGenerate({
     endpoints: endpoints,
     models: allModels,
     futureCalls: futureCalls,
+    reactiveFutureCalls: analyzers.futureCalls.reactiveFutureCallDefinitions,
   );
 
   var generatedProtocolFiles =

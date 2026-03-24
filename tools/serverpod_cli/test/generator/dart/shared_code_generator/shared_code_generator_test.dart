@@ -104,6 +104,7 @@ void main() {
               endpoints: [],
               models: [serverModel],
               futureCalls: [],
+        reactiveFutureCalls: [],
             ),
             config: config,
           );
@@ -127,6 +128,7 @@ void main() {
         endpoints: [],
         models: [sharedModel],
         futureCalls: [],
+        reactiveFutureCalls: [],
       );
 
       late var codeMap = generator.generateProtocolCode(

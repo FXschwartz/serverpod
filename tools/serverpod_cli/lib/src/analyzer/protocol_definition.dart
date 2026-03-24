@@ -13,10 +13,14 @@ class ProtocolDefinition {
   /// The future calls that are a part of this protocol.
   final List<FutureCallDefinition> futureCalls;
 
+  /// The reactive future calls that are a part of this protocol.
+  final List<ReactiveFutureCallDefinition> reactiveFutureCalls;
+
   /// Create a new [ProtocolDefinition].
   const ProtocolDefinition({
     required this.endpoints,
     required this.models,
     required this.futureCalls,
+    required this.reactiveFutureCalls,
   });
 }

@@ -40,6 +40,7 @@ void main() {
         endpoints: [],
         models: [],
         futureCalls: [],
+        reactiveFutureCalls: [],
       );
 
       late var codeMap = generator.generateProtocolCode(
@@ -203,6 +204,7 @@ void main() {
         endpoints: [],
         models: [],
         futureCalls: [],
+        reactiveFutureCalls: [],
       );
 
       late var codeMap = generator.generateProtocolCode(
@@ -320,6 +322,7 @@ void main() {
         ],
         models: [],
         futureCalls: [],
+        reactiveFutureCalls: [],
       );
 
       late var codeMap = generator.generateProtocolCode(
@@ -462,6 +465,7 @@ void main() {
         ],
         models: [],
         futureCalls: [],
+        reactiveFutureCalls: [],
       );
 
       late var codeMap = generator.generateProtocolCode(
@@ -615,6 +619,7 @@ void main() {
         ],
         models: [],
         futureCalls: [],
+        reactiveFutureCalls: [],
       );
 
       late var codeMap = generator.generateProtocolCode(
@@ -676,6 +681,7 @@ void main() {
         ],
         models: [],
         futureCalls: [],
+        reactiveFutureCalls: [],
       );
 
       late var codeMap = generator.generateProtocolCode(
@@ -745,6 +751,7 @@ void main() {
         ],
         models: [],
         futureCalls: [],
+        reactiveFutureCalls: [],
       );
 
       late var codeMap = generator.generateProtocolCode(
@@ -817,6 +824,7 @@ void main() {
         ],
         models: [],
         futureCalls: [],
+        reactiveFutureCalls: [],
       );
 
       late var codeMap = generator.generateProtocolCode(
@@ -890,6 +898,7 @@ void main() {
         ],
         models: [],
         futureCalls: [],
+        reactiveFutureCalls: [],
       );
 
       late var codeMap = generator.generateProtocolCode(
@@ -960,6 +969,7 @@ void main() {
         ],
         models: [],
         futureCalls: [],
+        reactiveFutureCalls: [],
       );
 
       late var codeMap = generator.generateProtocolCode(
@@ -1035,6 +1045,7 @@ void main() {
         ],
         models: [],
         futureCalls: [],
+        reactiveFutureCalls: [],
       );
 
       late var codeMap = generator.generateProtocolCode(
@@ -1112,6 +1123,7 @@ void main() {
         ],
         models: [],
         futureCalls: [],
+        reactiveFutureCalls: [],
       );
 
       late var codeMap = generator.generateProtocolCode(
@@ -1175,6 +1187,7 @@ void main() {
         ],
         models: [],
         futureCalls: [],
+        reactiveFutureCalls: [],
       );
 
       late var codeMap = generator.generateProtocolCode(
@@ -1234,6 +1247,7 @@ void main() {
         ],
         models: [],
         futureCalls: [],
+        reactiveFutureCalls: [],
       );
 
       late var codeMap = generator.generateProtocolCode(
@@ -1352,6 +1366,7 @@ void main() {
         endpoints: [baseEndpoint, concreteEndpoint],
         models: [],
         futureCalls: [],
+        reactiveFutureCalls: [],
       );
 
       late var codeMap = generator.generateProtocolCode(
@@ -1470,6 +1485,7 @@ void main() {
         ],
         models: [],
         futureCalls: [],
+        reactiveFutureCalls: [],
       );
 
       late var codeMap = generator.generateProtocolCode(
@@ -1614,6 +1630,7 @@ void main() {
         ],
         models: [],
         futureCalls: [],
+        reactiveFutureCalls: [],
       );
 
       late var codeMap = generator.generateProtocolCode(
@@ -1658,6 +1675,7 @@ void main() {
         ],
         models: [],
         futureCalls: [],
+        reactiveFutureCalls: [],
       );
 
       late var codeMap = generator.generateProtocolCode(
@@ -1711,6 +1729,7 @@ void main() {
         ],
         models: [],
         futureCalls: [],
+        reactiveFutureCalls: [],
       );
 
       late var codeMap = generator.generateProtocolCode(
@@ -1765,6 +1784,7 @@ void main() {
         ],
         models: [],
         futureCalls: [],
+        reactiveFutureCalls: [],
       );
 
       late var codeMap = generator.generateProtocolCode(
@@ -1823,6 +1843,7 @@ void main() {
               ])
               .build(),
         ],
+        reactiveFutureCalls: [],
       );
 
       late var codeMap = generator.generateProtocolCode(
@@ -1883,6 +1904,7 @@ void main() {
       var protocolDefinition = ProtocolDefinition(
         endpoints: [],
         models: [],
+        reactiveFutureCalls: [],
         futureCalls: [
           FutureCallDefinitionBuilder()
               .withClassName(futureClassName.pascalCase)

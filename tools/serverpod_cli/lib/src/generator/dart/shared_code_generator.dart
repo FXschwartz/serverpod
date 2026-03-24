@@ -71,6 +71,7 @@ class DartSharedCodeGenerator extends CodeGenerator {
           endpoints: [],
           models: packageModels,
           futureCalls: [],
+          reactiveFutureCalls: [],
         ),
         config: GeneratorConfig(
           name: config.name,

@@ -40,6 +40,7 @@ void main() {
         ],
         models: [],
         futureCalls: [],
+        reactiveFutureCalls: [],
       );
 
       var codeMap = generator.generateProtocolCode(
@@ -123,6 +124,7 @@ void main() {
         ],
         models: [],
         futureCalls: [],
+        reactiveFutureCalls: [],
       );
 
       var codeMap = generator.generateProtocolCode(
@@ -225,6 +227,7 @@ void main() {
         ],
         models: [],
         futureCalls: [],
+        reactiveFutureCalls: [],
       );
 
       var codeMap = generator.generateProtocolCode(

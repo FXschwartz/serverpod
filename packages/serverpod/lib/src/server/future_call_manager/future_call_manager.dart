@@ -543,8 +543,7 @@ class FutureCallManager {
     try {
       final objects = <dynamic>[
         for (final e in entries)
-          if (_deserializeRowData(e.rowData, handler.dataType) case final obj?)
-            obj,
+          ?_deserializeRowData(e.rowData, handler.dataType),
       ];
 
       if (objects.isNotEmpty) {

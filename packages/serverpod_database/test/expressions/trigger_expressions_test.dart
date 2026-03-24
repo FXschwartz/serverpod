@@ -119,8 +119,7 @@ void main() {
       () {
         var heightColumn = ColumnDouble('height', table);
         var tempColumn = ColumnDouble('temperature', table);
-        var expression =
-            heightColumn.hasChanged() & (tempColumn > 100.0);
+        var expression = heightColumn.hasChanged() & (tempColumn > 100.0);
 
         expect(
           expression.toString(),
@@ -135,8 +134,7 @@ void main() {
         var col1 = ColumnInt('a', table);
         var col2 = ColumnInt('b', table);
         var col3 = ColumnInt('c', table);
-        var expression =
-            col1.hasChanged() & (col2.hasChanged() | (col3 > 100));
+        var expression = col1.hasChanged() & (col2.hasChanged() | (col3 > 100));
 
         expect(
           expression.toString(),

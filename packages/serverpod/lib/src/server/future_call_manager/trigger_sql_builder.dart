@@ -81,8 +81,7 @@ END;
   String buildTriggerSql() {
     var whenClause = '';
     if (condition != null) {
-      whenClause =
-          '\nWHEN (${convertExpressionToWhenClause(condition!)})';
+      whenClause = '\nWHEN (${convertExpressionToWhenClause(condition!)})';
     }
 
     return '''

@@ -104,7 +104,7 @@ void main() {
               endpoints: [],
               models: [serverModel],
               futureCalls: [],
-        reactiveFutureCalls: [],
+              reactiveFutureCalls: [],
             ),
             config: config,
           );

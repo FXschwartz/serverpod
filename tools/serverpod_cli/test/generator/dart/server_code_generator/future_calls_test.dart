@@ -39,7 +39,7 @@ void main() {
           endpoints: [],
           models: [],
           futureCalls: [],
-        reactiveFutureCalls: [],
+          reactiveFutureCalls: [],
         );
 
         codeMap = generator.generateProtocolCode(

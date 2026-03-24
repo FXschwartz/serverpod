@@ -433,8 +433,7 @@ class FutureCallManager {
     for (final row in result) {
       final triggerName = row[0] as String;
       final sourceTable = row[1] as String;
-      final handlerName =
-          triggerName.replaceFirst('_serverpod_reactive_', '');
+      final handlerName = triggerName.replaceFirst('_serverpod_reactive_', '');
 
       if (!_reactiveFutureCalls.containsKey(handlerName)) {
         await _internalSession.db.unsafeExecute(

@@ -180,7 +180,7 @@ void main() {
           endpoints: [],
           models: [],
           futureCalls: [],
-        reactiveFutureCalls: [],
+          reactiveFutureCalls: [],
         ),
         config: configWithTestToolsPath,
       );
@@ -220,7 +220,7 @@ void main() {
           endpoints: [],
           models: [],
           futureCalls: [],
-        reactiveFutureCalls: [],
+          reactiveFutureCalls: [],
         ),
         config: configWithTestToolsPath,
       );
@@ -256,7 +256,7 @@ void main() {
           endpoints: [],
           models: [],
           futureCalls: [],
-        reactiveFutureCalls: [],
+          reactiveFutureCalls: [],
         ),
         config: configWithTestToolsPath,
       );

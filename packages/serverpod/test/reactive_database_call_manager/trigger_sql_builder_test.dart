@@ -135,7 +135,8 @@ void main() {
       var table = Table<int?>(tableName: 'sensor');
       var heightColumn = ColumnDouble('sensorHeight', table);
       var tempColumn = ColumnDouble('sensorTemperature', table);
-      var condition = heightColumn.hasChanged() &
+      var condition =
+          heightColumn.hasChanged() &
           (tempColumn.hasChanged() | (tempColumn > 100.0));
 
       var builder = TriggerSqlBuilder(

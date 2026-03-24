@@ -86,11 +86,12 @@ void main() {
     });
 
     test(
-      'when building trigger SQL then trigger fires on INSERT OR UPDATE OR DELETE.',
+      'when building trigger SQL then trigger fires on INSERT OR UPDATE only.',
       () {
         var sql = builder.buildTriggerSql();
 
-        expect(sql, contains('AFTER INSERT OR UPDATE OR DELETE ON "trip"'));
+        expect(sql, contains('AFTER INSERT OR UPDATE ON "trip"'));
+        expect(sql, isNot(contains('DELETE')));
       },
     );
   });

@@ -37,9 +37,19 @@ class TriggerSqlBuilder {
   String get _triggerName => '_serverpod_reactive_$handlerName';
   String get _functionName => '_serverpod_reactive_${handlerName}_fn';
 
-  /// The trigger events based on whether hasChanged() is used.
+  /// The trigger events based on the condition.
+  ///
+  /// - `hasChanged()` in condition → `UPDATE` only (OLD not available for
+  ///   INSERT, NEW not available for DELETE)
+  /// - Condition references NEW. columns → `INSERT OR UPDATE` (NEW is not
+  ///   available for DELETE triggers)
+  /// - No condition or no NEW. references → `INSERT OR UPDATE OR DELETE`
   String get _triggerEvents {
     if (_hasChangedExpressions) return 'UPDATE';
+    if (condition != null) {
+      final whenClause = convertExpressionToWhenClause(condition!);
+      if (whenClause.contains('NEW.')) return 'INSERT OR UPDATE';
+    }
     return 'INSERT OR UPDATE OR DELETE';
   }
 

@@ -515,18 +515,22 @@ class FutureCallManager {
       const message =
           'Internal server error. Failed to scan reactive future call outbox.';
 
-      _diagnosticsService.submitFrameworkException(
-        error,
-        stackTrace,
-        message: message,
-      );
+      try {
+        _diagnosticsService.submitFrameworkException(
+          error,
+          stackTrace,
+          message: message,
+        );
+      } catch (_) {
+        // Ensure scanner recovery even if diagnostics fails.
+      }
 
       stderr.writeln('${DateTime.now().toUtc()} $message');
       stderr.writeln('$error');
       stderr.writeln('$stackTrace');
+    } finally {
+      _reactiveScanCompleter.complete();
     }
-
-    _reactiveScanCompleter.complete();
   }
 
   Future<void> _dispatchReactiveCall(
@@ -547,11 +551,15 @@ class FutureCallManager {
       }
       await session.close();
     } catch (error, stackTrace) {
-      _diagnosticsService.submitCallException(
-        error,
-        stackTrace,
-        session: session,
-      );
+      try {
+        _diagnosticsService.submitCallException(
+          error,
+          stackTrace,
+          session: session,
+        );
+      } catch (_) {
+        // Ensure scanner recovery even if diagnostics fails.
+      }
       await session.close(error: error, stackTrace: stackTrace);
     }
   }

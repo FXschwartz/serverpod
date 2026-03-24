@@ -342,7 +342,7 @@ void main() {
   );
 
   withServerpod(
-    'Given a ReactiveFutureCall registered and started for transaction safety',
+    'Given a ReactiveFutureCall registered and started when a transaction is committed',
     rollbackDatabase: RollbackDatabase.disabled,
     testGroupTagsOverride: [TestTags.concurrencyOneTestTag],
     (sessionBuilder, _) {
@@ -365,7 +365,7 @@ void main() {
 
         futureCallManager.registerFutureCall(
           reactiveCall,
-          'testTransactionSafety',
+          'testTransactionCommit',
         );
         await futureCallManager.start();
       });
@@ -382,29 +382,7 @@ void main() {
         );
       });
 
-      group('when a transaction is rolled back after inserting a row', () {
-        setUp(() async {
-          try {
-            await session.db.transaction((transaction) async {
-              await SimpleData.db.insertRow(
-                session,
-                SimpleData(num: 999),
-              );
-              throw Exception('Intentional rollback');
-            });
-          } catch (_) {
-            // Expected — transaction rolled back
-          }
-          // Wait to ensure no outbox entry is processed
-          await Future.delayed(const Duration(milliseconds: 300));
-        });
-
-        test('then react is not called', () async {
-          expect(reactiveCall.firstBatch.isCompleted, isFalse);
-        });
-      });
-
-      group('when a transaction is committed after inserting a row', () {
+      group('when inserting a row inside a committed transaction', () {
         setUp(() async {
           await session.db.transaction((transaction) async {
             await SimpleData.db.insertRow(

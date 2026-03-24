@@ -21,6 +21,14 @@ abstract class ReactiveFutureCall<T extends TableRow> extends FutureCall<T> {
   /// Called when matching changes are detected in the outbox.
   Future<void> react(Session session, List<T> objects);
 
+  /// Casts deserialized objects to the correct type `T` and calls [react].
+  ///
+  /// This preserves the generic type information that would otherwise be lost
+  /// when called from the manager where the concrete type is not known.
+  Future<void> dispatchReact(Session session, List<dynamic> objects) {
+    return react(session, objects.cast<T>());
+  }
+
   @override
   Future<void> invoke(Session session, T? object) => Future.value();
 }

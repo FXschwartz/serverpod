@@ -541,13 +541,14 @@ class FutureCallManager {
     final session = _sessionBuilder(handlerName);
 
     try {
-      final objects = entries
-          .map((e) => _deserializeRowData(e.rowData, handler.dataType))
-          .whereType<TableRow>()
-          .toList();
+      final objects = <dynamic>[
+        for (final e in entries)
+          if (_deserializeRowData(e.rowData, handler.dataType) case final obj?)
+            obj,
+      ];
 
       if (objects.isNotEmpty) {
-        await handler.react(session, objects);
+        await handler.dispatchReact(session, objects);
       }
       await session.close();
     } catch (error, stackTrace) {

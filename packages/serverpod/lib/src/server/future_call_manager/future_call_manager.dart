@@ -219,8 +219,8 @@ class FutureCallManager {
       _hasPendingStart = true;
     }
 
-    await _initializeReactiveTriggers();
     if (_reactiveFutureCalls.isNotEmpty) {
+      await _initializeReactiveTriggers();
       _startReactiveScanner();
     }
 

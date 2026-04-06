@@ -518,15 +518,25 @@ class ReactiveDatabaseCallEntryRepository {
   }
 
   /// Deletes all [ReactiveDatabaseCallEntry]s in the list and returns the deleted rows.
+  ///
+  /// To specify the order of the returned rows use [orderBy] or [orderByList]
+  /// when sorting by multiple columns.
+  ///
   /// This is an atomic operation, meaning that if one of the rows fail to
   /// be deleted, none of the rows will be deleted.
   Future<List<ReactiveDatabaseCallEntry>> delete(
     _i1.DatabaseSession session,
     List<ReactiveDatabaseCallEntry> rows, {
+    _i1.OrderByBuilder<ReactiveDatabaseCallEntryTable>? orderBy,
+    bool orderDescending = false,
+    _i1.OrderByListBuilder<ReactiveDatabaseCallEntryTable>? orderByList,
     _i1.Transaction? transaction,
   }) async {
     return session.db.delete<ReactiveDatabaseCallEntry>(
       rows,
+      orderBy: orderBy?.call(ReactiveDatabaseCallEntry.t),
+      orderByList: orderByList?.call(ReactiveDatabaseCallEntry.t),
+      orderDescending: orderDescending,
       transaction: transaction,
     );
   }
@@ -544,13 +554,22 @@ class ReactiveDatabaseCallEntryRepository {
   }
 
   /// Deletes all rows matching the [where] expression.
+  ///
+  /// To specify the order of the returned rows use [orderBy] or [orderByList]
+  /// when sorting by multiple columns.
   Future<List<ReactiveDatabaseCallEntry>> deleteWhere(
     _i1.DatabaseSession session, {
     required _i1.WhereExpressionBuilder<ReactiveDatabaseCallEntryTable> where,
+    _i1.OrderByBuilder<ReactiveDatabaseCallEntryTable>? orderBy,
+    bool orderDescending = false,
+    _i1.OrderByListBuilder<ReactiveDatabaseCallEntryTable>? orderByList,
     _i1.Transaction? transaction,
   }) async {
     return session.db.deleteWhere<ReactiveDatabaseCallEntry>(
       where: where(ReactiveDatabaseCallEntry.t),
+      orderBy: orderBy?.call(ReactiveDatabaseCallEntry.t),
+      orderByList: orderByList?.call(ReactiveDatabaseCallEntry.t),
+      orderDescending: orderDescending,
       transaction: transaction,
     );
   }

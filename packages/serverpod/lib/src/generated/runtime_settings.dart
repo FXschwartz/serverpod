@@ -681,3 +681,13 @@ class RuntimeSettingsRepository {
     );
   }
 }
+
+abstract class RuntimeSettingsReactiveFutureCall
+    extends _i1.ReactiveFutureCall<RuntimeSettings> {
+  @override
+  String get tableName => 'serverpod_runtime_settings';
+
+  _i1.WhereExpressionBuilder<RuntimeSettingsTable> get where;
+  @override
+  _i1.Expression? get condition => where(RuntimeSettings.t);
+}

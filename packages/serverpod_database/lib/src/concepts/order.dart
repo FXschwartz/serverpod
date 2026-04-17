@@ -39,6 +39,9 @@ class Order implements Column {
   Order._({required this.column, this.orderDescending = false});
 
   @override
+  Expression hasChanged() => column.hasChanged();
+
+  @override
   String toString() {
     var str = '$column';
     if (orderDescending) str += ' DESC';

@@ -22,10 +22,12 @@ import 'package:serverpod_cli/src/util/string_manipulation.dart';
 /// Cached analysis result for a single future call file.
 class _CachedFutureCallFileResult {
   final List<FutureCallDefinition> definitions;
+  final List<ReactiveFutureCallDefinition> reactiveDefinitions;
   final bool hadErrors;
 
   _CachedFutureCallFileResult({
     required this.definitions,
+    required this.reactiveDefinitions,
     required this.hadErrors,
   });
 }
@@ -61,6 +63,13 @@ class FutureCallsAnalyzer {
     for (final entry in _fileCache.entries)
       if (entry.value.hadErrors) entry.key,
   };
+
+  Set<ReactiveFutureCallDefinition> _reactiveFutureCallDefinitions = {};
+
+  /// The reactive future call definitions discovered during analysis.
+  List<ReactiveFutureCallDefinition> get reactiveFutureCallDefinitions =>
+      _reactiveFutureCallDefinitions.toList()
+        ..sort((a, b) => a.className.compareTo(b.className));
 
   /// Inform the analyzer that the provided [filePaths] have been updated.
   ///
@@ -195,7 +204,8 @@ class FutureCallsAnalyzer {
       if (library == null) continue;
 
       var futureCallClasses = _getFutureCallClasses(library);
-      if (futureCallClasses.isEmpty) {
+      if (futureCallClasses.isEmpty &&
+          _getReactiveFutureCallClasses(library).isEmpty) {
         _fileCache.remove(path);
         continue;
       }
@@ -216,6 +226,7 @@ class FutureCallsAnalyzer {
 
         _fileCache[path] = _CachedFutureCallFileResult(
           definitions: [],
+          reactiveDefinitions: [],
           hadErrors: true,
         );
         continue;
@@ -286,6 +297,17 @@ class FutureCallsAnalyzer {
 
       _fileCache[filePath] = _CachedFutureCallFileResult(
         definitions: defs,
+        reactiveDefinitions: filePath.startsWith('package:')
+            ? []
+            : [
+                for (final classElement in _getReactiveFutureCallClasses(
+                  library,
+                ))
+                  ReactiveFutureCallDefinition(
+                    className: classElement.name!,
+                    filePath: filePath,
+                  ),
+              ],
         hadErrors: !hasModels,
       );
     }
@@ -297,6 +319,12 @@ class FutureCallsAnalyzer {
       futureCallDefs.addAll(result.definitions);
     }
     futureCallDefs.removeWhere((e) => e.filePath.startsWith('package:'));
+
+    final reactiveDefs = <ReactiveFutureCallDefinition>{};
+    for (var result in _fileCache.values) {
+      reactiveDefs.addAll(result.reactiveDefinitions);
+    }
+    _reactiveFutureCallDefinitions = reactiveDefs;
 
     return futureCallDefs;
   }
@@ -377,7 +405,11 @@ class FutureCallsAnalyzer {
     if (!file.absolute.path.startsWith(absoluteIncludedPaths)) return false;
     if (!file.path.endsWith('.dart')) return false;
     if (!file.existsSync()) return false;
-    return file.readAsStringSync().contains('extends FutureCall');
+    final content = file.readAsStringSync();
+    // 'ReactiveFutureCall' also matches generated per-model intermediate
+    // classes such as `TripReactiveFutureCall`.
+    return content.contains('extends FutureCall') ||
+        content.contains('ReactiveFutureCall');
   }
 
   Map<String, List<SourceSpanSeverityException>> _validateLibrary(
@@ -433,6 +465,14 @@ class FutureCallsAnalyzer {
   Iterable<ClassElement> _getFutureCallClasses(ResolvedLibraryResult library) {
     return library.element.classes.where(
       FutureCallClassAnalyzer.isFutureCallClass,
+    );
+  }
+
+  Iterable<ClassElement> _getReactiveFutureCallClasses(
+    ResolvedLibraryResult library,
+  ) {
+    return library.element.classes.where(
+      FutureCallClassAnalyzer.isReactiveFutureCallClass,
     );
   }
 

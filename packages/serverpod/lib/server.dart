@@ -25,3 +25,4 @@ export 'src/redis/controller.dart';
 
 export 'package:serverpod_shared/serverpod_shared.dart'
     show ServerpodLoggingMode;
+export 'src/server/future_call_manager/reactive_future_call.dart';

@@ -1263,3 +1263,12 @@ class TypesRepository {
     );
   }
 }
+
+abstract class TypesReactiveFutureCall extends _i1.ReactiveFutureCall<Types> {
+  @override
+  String get tableName => 'types';
+
+  _i1.WhereExpressionBuilder<TypesTable> get where;
+  @override
+  _i1.Expression? get condition => where(Types.t);
+}

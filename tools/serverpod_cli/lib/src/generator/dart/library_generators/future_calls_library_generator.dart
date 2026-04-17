@@ -283,7 +283,6 @@ extension FutureCallsLibraryGenerator on LibraryGenerator {
         .statement;
   }
 
-
   /// Generates RecurringFutureCallDispatch for server side.
   void _generateRecurringFutureCallDispatch(LibraryBuilder libraryBuilder) {
     libraryBuilder.body.add(

@@ -25,10 +25,10 @@ class PostgresReactiveTriggerManager implements ReactiveTriggerManager {
         '${ReactiveTriggerManager.triggerFunctionPrefix}$triggerName';
 
     final triggerEvents = _resolveTriggerEvents(when);
-    final whenClause =
-        when != null ? '\n  WHEN (${when.toWhenClause()})' : '';
+    final whenClause = when != null ? '\n  WHEN (${when.toWhenClause()})' : '';
 
-    final functionSql = '''
+    final functionSql =
+        '''
 CREATE OR REPLACE FUNCTION "$functionName"()
 RETURNS TRIGGER AS \$\$
 BEGIN
@@ -48,7 +48,8 @@ BEGIN
 END;
 \$\$ LANGUAGE plpgsql;''';
 
-    final triggerSql = '''
+    final triggerSql =
+        '''
 CREATE OR REPLACE TRIGGER "$triggerName"
   AFTER $triggerEvents ON "$tableName"
   FOR EACH ROW$whenClause

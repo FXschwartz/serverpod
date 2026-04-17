@@ -600,8 +600,8 @@ class FutureCallManager {
     // Clean up orphaned triggers (those whose name no longer matches any
     // registered reactive call).
     try {
-      final existingTriggers =
-          await triggerManager.listReactiveTriggersWithTables();
+      final existingTriggers = await triggerManager
+          .listReactiveTriggersWithTables();
       for (final trigger in existingTriggers) {
         if (!expectedTriggerNames.contains(trigger.triggerName)) {
           await triggerManager.dropTrigger(

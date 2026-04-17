@@ -91,8 +91,9 @@ void main() async {
           test(
             'then react is called with the correct event',
             () async {
-              final events = await testReactiveCall.completer.future
-                  .timeout(Duration(seconds: 5));
+              final events = await testReactiveCall.completer.future.timeout(
+                Duration(seconds: 5),
+              );
 
               expect(events, hasLength(1));
               expect(events.first.operation, 'INSERT');
@@ -103,15 +104,14 @@ void main() async {
           test(
             'then the outbox events are cleaned up via cascade delete',
             () async {
-              await testReactiveCall.completer.future
-                  .timeout(Duration(seconds: 5));
+              await testReactiveCall.completer.future.timeout(
+                Duration(seconds: 5),
+              );
 
-              final remainingOutbox =
-                  await ReactiveDatabaseCallEntry.db.find(
-                    session,
-                    where: (t) =>
-                        t.futureCallName.equals(reactiveCallName),
-                  );
+              final remainingOutbox = await ReactiveDatabaseCallEntry.db.find(
+                session,
+                where: (t) => t.futureCallName.equals(reactiveCallName),
+              );
 
               expect(remainingOutbox, isEmpty);
             },

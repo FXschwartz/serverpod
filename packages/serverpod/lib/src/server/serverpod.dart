@@ -636,8 +636,9 @@ class Serverpod {
             name,
           );
         },
-        reactiveTriggerManager:
-            _databaseProvider?.createReactiveTriggerManager(internalSession.db),
+        reactiveTriggerManager: _databaseProvider?.createReactiveTriggerManager(
+          internalSession.db,
+        ),
       );
     }
 

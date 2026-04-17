@@ -1,0 +1,55 @@
+BEGIN;
+
+--
+-- ACTION CREATE TABLE
+--
+CREATE TABLE "serverpod_reactive_db_call" (
+    "id" bigserial PRIMARY KEY,
+    "futureCallName" text NOT NULL,
+    "sourceTable" text NOT NULL,
+    "operation" text NOT NULL,
+    "rowData" text NOT NULL,
+    "createdAt" timestamp without time zone NOT NULL,
+    "futureCallEntryId" bigint
+);
+
+-- Indexes
+CREATE INDEX "serverpod_reactive_db_call_unclaimed_idx" ON "serverpod_reactive_db_call" USING btree ("futureCallEntryId");
+
+--
+-- ACTION CREATE FOREIGN KEY
+--
+ALTER TABLE ONLY "serverpod_reactive_db_call"
+    ADD CONSTRAINT "serverpod_reactive_db_call_fk_0"
+    FOREIGN KEY("futureCallEntryId")
+    REFERENCES "serverpod_future_call"("id")
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION;
+
+
+--
+-- MIGRATION VERSION FOR serverpod_chat
+--
+INSERT INTO "serverpod_migrations" ("module", "version", "timestamp")
+    VALUES ('serverpod_chat', '20260417190009423', now())
+    ON CONFLICT ("module")
+    DO UPDATE SET "version" = '20260417190009423', "timestamp" = now();
+
+--
+-- MIGRATION VERSION FOR serverpod
+--
+INSERT INTO "serverpod_migrations" ("module", "version", "timestamp")
+    VALUES ('serverpod', '20260416201338962', now())
+    ON CONFLICT ("module")
+    DO UPDATE SET "version" = '20260416201338962', "timestamp" = now();
+
+--
+-- MIGRATION VERSION FOR serverpod_auth
+--
+INSERT INTO "serverpod_migrations" ("module", "version", "timestamp")
+    VALUES ('serverpod_auth', '20260417185928542', now())
+    ON CONFLICT ("module")
+    DO UPDATE SET "version" = '20260417185928542', "timestamp" = now();
+
+
+COMMIT;

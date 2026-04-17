@@ -132,9 +132,7 @@ class FutureCallScanner {
       // Group by future call name.
       final groupedEvents = <String, List<ReactiveDatabaseCallEntry>>{};
       for (final event in unclaimedEvents) {
-        groupedEvents
-            .putIfAbsent(event.futureCallName, () => [])
-            .add(event);
+        groupedEvents.putIfAbsent(event.futureCallName, () => []).add(event);
       }
 
       // For each group, create a FutureCallEntry and claim the events.
@@ -174,8 +172,7 @@ class FutureCallScanner {
         }
       }
     } catch (error, stackTrace) {
-      var message =
-          'Internal server error. Failed to scan reactive outbox.';
+      var message = 'Internal server error. Failed to scan reactive outbox.';
 
       _diagnosticReporting.submitFrameworkException(
         error,

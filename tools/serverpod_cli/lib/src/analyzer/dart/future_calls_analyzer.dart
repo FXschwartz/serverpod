@@ -182,7 +182,8 @@ class FutureCallsAnalyzer {
       if (library == null) continue;
 
       var futureCallClasses = _getFutureCallClasses(library);
-      if (futureCallClasses.isEmpty) {
+      var reactiveClasses = _getReactiveFutureCallClasses(library);
+      if (futureCallClasses.isEmpty && reactiveClasses.isEmpty) {
         _fileCache.remove(path);
         continue;
       }
@@ -226,7 +227,10 @@ class FutureCallsAnalyzer {
       }
     }
     for (var (library, _) in validLibraries) {
-      for (var cls in _getFutureCallClasses(library)) {
+      for (var cls in [
+        ..._getFutureCallClasses(library),
+        ..._getReactiveFutureCallClasses(library),
+      ]) {
         futureCallClassMap.update(
           cls.name!,
           (v) => v + 1,
@@ -354,6 +358,17 @@ class FutureCallsAnalyzer {
       );
     }
 
+    // Parse reactive future call classes.
+    var reactiveClasses = _getReactiveFutureCallClasses(library);
+    for (var classElement in reactiveClasses) {
+      FutureCallClassAnalyzer.parseReactive(
+        classElement,
+        filePath,
+        futureCallDefinitions,
+        templateRegistry: templateRegistry,
+      );
+    }
+
     return futureCallDefinitions;
   }
 
@@ -361,7 +376,9 @@ class FutureCallsAnalyzer {
     if (!file.absolute.path.startsWith(absoluteIncludedPaths)) return false;
     if (!file.path.endsWith('.dart')) return false;
     if (!file.existsSync()) return false;
-    return file.readAsStringSync().contains('extends FutureCall');
+    var content = file.readAsStringSync();
+    return content.contains('extends FutureCall') ||
+        content.contains('extends ReactiveFutureCall');
   }
 
   Map<String, List<SourceSpanSeverityException>> _validateLibrary(
@@ -417,6 +434,14 @@ class FutureCallsAnalyzer {
   Iterable<ClassElement> _getFutureCallClasses(ResolvedLibraryResult library) {
     return library.element.classes.where(
       FutureCallClassAnalyzer.isFutureCallClass,
+    );
+  }
+
+  Iterable<ClassElement> _getReactiveFutureCallClasses(
+    ResolvedLibraryResult library,
+  ) {
+    return library.element.classes.where(
+      FutureCallClassAnalyzer.isConcreteReactiveFutureCall,
     );
   }
 

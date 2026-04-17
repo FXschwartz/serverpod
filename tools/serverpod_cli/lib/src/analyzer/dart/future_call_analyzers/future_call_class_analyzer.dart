@@ -114,7 +114,56 @@ abstract class FutureCallClassAnalyzer {
   static bool isFutureCallClass(ClassElement element) {
     if (!element.isConstructable && !element.isAbstract) return false;
     if (element.isExecutableFutureCall) return false;
+    if (isReactiveFutureCallClass(element)) return false;
     return isFutureCallInterface(element);
+  }
+
+  /// Returns `true` if the class is or extends [ReactiveFutureCall].
+  static bool isReactiveFutureCallClass(ClassElement element) {
+    return element.name == 'ReactiveFutureCall' ||
+        element.allSupertypes.any(
+          (s) => s.element.name == 'ReactiveFutureCall',
+        );
+  }
+
+  /// Returns `true` if the [ClassElement] is a concrete reactive future call
+  /// class that should be registered.
+  static bool isConcreteReactiveFutureCall(ClassElement element) {
+    if (element.isAbstract) return false;
+    if (!element.isConstructable) return false;
+    if (element.name == 'ReactiveFutureCall') return false;
+    return isReactiveFutureCallClass(element);
+  }
+
+  /// Parses a [ClassElement] into a [ReactiveFutureCallDefinition].
+  static void parseReactive(
+    ClassElement element,
+    String filePath,
+    List<FutureCallDefinition> futureCallDefinitions, {
+    required DartDocTemplateRegistry templateRegistry,
+  }) {
+    var className = element.displayName;
+    if (futureCallDefinitions.any(
+      (e) => e.className == className && e.filePath == filePath,
+    )) {
+      return;
+    }
+
+    var classDocumentationComment = element.documentationComment;
+    var annotations = element.futureCallAnnotations;
+
+    futureCallDefinitions.add(
+      ReactiveFutureCallDefinition(
+        name: className,
+        documentationComment: stripDocumentationTemplateMarkers(
+          classDocumentationComment,
+          templateRegistry: templateRegistry,
+        ),
+        className: className,
+        filePath: filePath,
+        annotations: annotations,
+      ),
+    );
   }
 
   /// Returns `true` if the class extends the Serverpod `FutureCall` base class.

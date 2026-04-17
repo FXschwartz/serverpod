@@ -14,11 +14,13 @@ typedef DispatchEntries = void Function(List<FutureCallEntry> entries);
 typedef ShouldSkipScan = bool Function();
 
 /// Scans the database for overdue future calls and dispatches them.
+/// Also scans the reactive outbox for unclaimed events.
 class FutureCallScanner {
   final Session _internalSession;
   final FutureCallDiagnosticsService _diagnosticReporting;
 
   Timer? _timer;
+  Timer? _reactiveTimer;
 
   final Duration _scanInterval;
 
@@ -28,6 +30,7 @@ class FutureCallScanner {
   bool _isStopping = false;
 
   var _scanCompleter = Completer<void>()..complete();
+  var _reactiveScanCompleter = Completer<void>()..complete();
 
   /// Creates a new [FutureCallScanner].
   ///
@@ -97,6 +100,97 @@ class FutureCallScanner {
     _scanCompleter.complete();
   }
 
+  /// Scans the reactive outbox for unclaimed events and creates
+  /// [FutureCallEntry] records for them.
+  ///
+  /// Groups unclaimed outbox events by `futureCallName`, creates a
+  /// [FutureCallEntry] for each group with `time` set to now (immediate
+  /// execution), then claims the outbox events by setting their
+  /// `futureCallEntryId` to the new entry's ID.
+  ///
+  /// All operations for each group are performed in a transaction to
+  /// prevent race conditions across server instances.
+  Future<void> scanReactiveOutbox() async {
+    if (_isStopping || !_reactiveScanCompleter.isCompleted) {
+      return;
+    }
+
+    _reactiveScanCompleter = Completer<void>();
+
+    try {
+      // Find all unclaimed outbox events.
+      final unclaimedEvents = await ReactiveDatabaseCallEntry.db.find(
+        _internalSession,
+        where: (t) => t.futureCallEntryId.equals(null),
+      );
+
+      if (unclaimedEvents.isEmpty) {
+        _reactiveScanCompleter.complete();
+        return;
+      }
+
+      // Group by future call name.
+      final groupedEvents = <String, List<ReactiveDatabaseCallEntry>>{};
+      for (final event in unclaimedEvents) {
+        groupedEvents
+            .putIfAbsent(event.futureCallName, () => [])
+            .add(event);
+      }
+
+      // For each group, create a FutureCallEntry and claim the events.
+      for (final entry in groupedEvents.entries) {
+        final futureCallName = entry.key;
+        final events = entry.value;
+
+        try {
+          await _internalSession.db.transaction((transaction) async {
+            // Create a FutureCallEntry for immediate execution.
+            final futureCallEntry = await FutureCallEntry.db.insertRow(
+              _internalSession,
+              FutureCallEntry(
+                name: futureCallName,
+                time: DateTime.now().toUtc(),
+                serverId: 'reactive',
+              ),
+              transaction: transaction,
+            );
+
+            // Claim all outbox events by setting their futureCallEntryId.
+            for (final event in events) {
+              await ReactiveDatabaseCallEntry.db.updateRow(
+                _internalSession,
+                event.copyWith(futureCallEntryId: futureCallEntry.id),
+                transaction: transaction,
+              );
+            }
+          });
+        } catch (error, stackTrace) {
+          _diagnosticReporting.submitFrameworkException(
+            error,
+            stackTrace,
+            message:
+                'Failed to claim reactive outbox events for $futureCallName.',
+          );
+        }
+      }
+    } catch (error, stackTrace) {
+      var message =
+          'Internal server error. Failed to scan reactive outbox.';
+
+      _diagnosticReporting.submitFrameworkException(
+        error,
+        stackTrace,
+        message: message,
+      );
+
+      stderr.writeln('${DateTime.now().toUtc()} $message');
+      stderr.writeln('$error');
+      stderr.writeln('$stackTrace');
+    }
+
+    _reactiveScanCompleter.complete();
+  }
+
   /// Starts the task scanner, which will scan the database for overdue future
   /// calls at the given interval.
   void start() {
@@ -110,12 +204,26 @@ class FutureCallScanner {
     );
   }
 
+  /// Starts the reactive outbox scanner with the given [scanInterval].
+  void startReactiveOutboxScanner({required Duration scanInterval}) {
+    if (_reactiveTimer != null) {
+      return;
+    }
+
+    _reactiveTimer = Timer.periodic(
+      scanInterval,
+      (_) => scanReactiveOutbox(),
+    );
+  }
+
   /// Stops the task scanner.
   Future<void> stop() async {
     _isStopping = true;
 
     _timer?.cancel();
+    _reactiveTimer?.cancel();
 
     await _scanCompleter.future;
+    await _reactiveScanCompleter.future;
   }
 }

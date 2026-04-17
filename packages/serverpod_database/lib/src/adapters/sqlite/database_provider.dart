@@ -46,4 +46,10 @@ class SqliteDatabaseProvider implements DatabaseProvider {
   SqliteDatabaseAnalyzer createAnalyzer(Database database) {
     return SqliteDatabaseAnalyzer(database: database);
   }
+
+  @override
+  ReactiveTriggerManager? createReactiveTriggerManager(Database database) {
+    // SQLite does not support reactive triggers.
+    return null;
+  }
 }

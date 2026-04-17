@@ -45,6 +45,14 @@ abstract class Column<T> {
   }) : _fieldName = fieldName ?? _columnName,
        type = T;
 
+  /// Creates a [HasChangedExpression] for this column, used in database
+  /// trigger `WHEN` clauses to detect when this column's value has changed.
+  ///
+  /// ```dart
+  /// table.name.hasChanged() & table.email.hasChanged()
+  /// ```
+  HasChangedExpression hasChanged() => HasChangedExpression(this);
+
   @override
   String toString() {
     return '"${table.queryPrefix}"."$_columnName"';

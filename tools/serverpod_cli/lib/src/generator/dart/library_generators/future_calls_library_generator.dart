@@ -252,26 +252,37 @@ extension FutureCallsLibraryGenerator on LibraryGenerator {
   }
 
   Code _buildRegisteredFutureCalls(List<FutureCallDefinition> futureCalls) {
+    var mapEntries = <Expression, Expression>{};
+
+    for (var futureCall in futureCalls) {
+      if (futureCall.isAbstract) continue;
+
+      if (futureCall is ReactiveFutureCallDefinition) {
+        // Reactive calls are registered directly by class name.
+        mapEntries[literalString(futureCall.className)] = refer(
+          futureCall.className,
+          _futureCallPath(futureCall),
+        ).call([]);
+      } else {
+        // Regular future calls are registered by generated class name per method.
+        for (var method in futureCall.methods) {
+          var className = _getFutureCallClassName(futureCall.name, method.name);
+          mapEntries[literalString(className)] = refer(className).call([]);
+        }
+      }
+    }
+
     return refer('var registeredFutureCalls')
         .assign(
           literalMap(
-            {
-              for (var futureCall in futureCalls)
-                for (var method in futureCall.methods)
-                  if (!futureCall.isAbstract)
-                    _getFutureCallClassName(
-                      futureCall.name,
-                      method.name,
-                    ): refer(
-                      _getFutureCallClassName(futureCall.name, method.name),
-                    ).call([]),
-            },
+            mapEntries,
             refer('String'),
             refer('FutureCall', serverpodUrl(true)),
           ),
         )
         .statement;
   }
+
 
   /// Generates RecurringFutureCallDispatch for server side.
   void _generateRecurringFutureCallDispatch(LibraryBuilder libraryBuilder) {

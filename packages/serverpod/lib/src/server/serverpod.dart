@@ -189,6 +189,8 @@ class Serverpod {
 
   FutureCallManager? _futureCallManager;
 
+  DatabaseProvider? _databaseProvider;
+
   final TaskManagerImpl _requestReceivingShutdownTasks = TaskManagerImpl();
   final TaskManagerImpl _internalServicesShutdownTasks = TaskManagerImpl();
 
@@ -550,6 +552,7 @@ class Serverpod {
     if (Features.enableDatabase && databaseConfiguration != null) {
       final databaseDialect = databaseConfiguration.dialect;
       final databaseProvider = DatabaseProvider.forDialect(databaseDialect);
+      _databaseProvider = databaseProvider;
       _databasePoolManager = databaseProvider.createPoolManager(
         serializationManager,
         runtimeParametersBuilder,
@@ -633,6 +636,8 @@ class Serverpod {
             name,
           );
         },
+        reactiveTriggerManager:
+            _databaseProvider?.createReactiveTriggerManager(internalSession.db),
       );
     }
 
@@ -730,6 +735,10 @@ class Serverpod {
         _reportException(e, stackTrace, message: message);
         throw ExitException(1, '$message: $e');
       }
+
+      // Drop all reactive triggers before migrations to prevent failures
+      // from triggers referencing columns being altered.
+      await _futureCallManager?.dropAllReactiveTriggers();
 
       await _applyMigrations(
         applyRepairMigration: config.applyRepairMigration,

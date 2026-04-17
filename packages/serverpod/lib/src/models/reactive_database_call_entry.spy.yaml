@@ -1,0 +1,30 @@
+### An outbox entry for reactive database triggers.
+### Written by database triggers and consumed by the reactive outbox scanner.
+class: ReactiveDatabaseCallEntry
+table: serverpod_reactive_db_call
+
+fields:
+  ### The name of the reactive future call to invoke.
+  futureCallName: String
+
+  ### The database table that triggered this event.
+  sourceTable: String
+
+  ### The type of operation: INSERT, UPDATE, or DELETE.
+  operation: String
+
+  ### The row data serialized as JSON via row_to_json().
+  rowData: String
+
+  ### The time the event was created by the trigger.
+  createdAt: DateTime
+
+  ### The future call entry that claimed this outbox event.
+  ### Null means unclaimed and waiting to be picked up by the scanner.
+  ### When the FutureCallEntry is deleted after execution, cascade
+  ### delete removes the claimed outbox events automatically.
+  futureCallEntryId: int?, relation(parent=serverpod_future_call, onDelete=Cascade)
+
+indexes:
+  serverpod_reactive_db_call_unclaimed_idx:
+    fields: futureCallEntryId

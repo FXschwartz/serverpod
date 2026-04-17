@@ -41,6 +41,7 @@ class FutureCallManager {
 
   final _futureCalls = <String, FutureCall>{};
   final FutureCallDiagnosticsService _diagnosticsService;
+  final ReactiveTriggerManager? _reactiveTriggerManager;
 
   late final ServerpodTaskScheduler _scheduler;
   late final FutureCallScanner _scanner;
@@ -65,6 +66,8 @@ class FutureCallManager {
   /// - [initializeFutureCall]: A function to initialize a [FutureCall] with its name.
   /// - [heartbeatInterval]: The interval for updating future call claims with a heartbeat
   /// to keep them alive. Defaults to 30 seconds.
+  /// - [reactiveTriggerManager]: Optional manager for creating database triggers
+  /// for [ReactiveFutureCall]s. If null, reactive calls will log a warning.
   FutureCallManager(
     this._config,
     this._serializationManager, {
@@ -74,11 +77,13 @@ class FutureCallManager {
     required FutureCallSessionBuilder sessionProvider,
     required InitializeFutureCall initializeFutureCall,
     Duration? heartbeatInterval,
+    ReactiveTriggerManager? reactiveTriggerManager,
   }) : _diagnosticsService = diagnosticsService,
        _internalSession = internalSession,
        _logSession = logSession,
        _sessionBuilder = sessionProvider,
        _initializeFutureCall = initializeFutureCall,
+       _reactiveTriggerManager = reactiveTriggerManager,
        _heartbeatInterval = heartbeatInterval ?? const Duration(minutes: 1) {
     _scheduler = ServerpodTaskScheduler(
       concurrencyLimit: _config.concurrencyLimit,
@@ -190,6 +195,9 @@ class FutureCallManager {
   /// If no future calls are registered, the scanner will not start immediately.
   /// Instead, the scanner will be started when the first future call is
   /// registered via [registerFutureCall].
+  ///
+  /// For [ReactiveFutureCall]s, this also creates database triggers and
+  /// starts the reactive outbox scanner.
   Future<void> start() async {
     await _checkBrokenFutureCalls();
     if (_futureCalls.isNotEmpty) {
@@ -197,6 +205,8 @@ class FutureCallManager {
     } else {
       _hasPendingStart = true;
     }
+
+    await _initializeReactiveTriggers();
   }
 
   /// Stops the [FutureCallManager], preventing it from monitoring and
@@ -238,6 +248,10 @@ class FutureCallManager {
   /// Collection of active claim heartbeat timers used for testing purposes.
   @visibleForTesting
   List<Timer> get heartbeatTimers => _heartbeatTimers;
+
+  /// The scanner used for scanning future call entries and reactive outbox.
+  @visibleForTesting
+  FutureCallScanner get scanner => _scanner;
 
   void _cancelHeartbeatTimer(Timer timer) {
     _heartbeatTimers.remove(timer..cancel());
@@ -354,15 +368,23 @@ class FutureCallManager {
     final futureCallSession = _sessionBuilder(futureCallEntry.name);
 
     try {
-      dynamic object;
-      if (futureCallEntry.serializedObject != null) {
-        object = _serializationManager.decode(
-          futureCallEntry.serializedObject!,
-          futureCall.dataType,
+      if (futureCall is ReactiveFutureCall) {
+        await futureCall.invokeWithEntryId(
+          futureCallSession,
+          futureCallEntry.id!,
+          _serializationManager,
         );
-      }
+      } else {
+        dynamic object;
+        if (futureCallEntry.serializedObject != null) {
+          object = _serializationManager.decode(
+            futureCallEntry.serializedObject!,
+            futureCall.dataType,
+          );
+        }
 
-      await futureCall.invoke(futureCallSession, object);
+        await futureCall.invoke(futureCallSession, object);
+      }
       await futureCallSession.close();
     } catch (error, stackTrace) {
       _diagnosticsService.submitCallException(
@@ -517,6 +539,102 @@ class FutureCallManager {
       return null;
     } catch (e) {
       return e.toString();
+    }
+  }
+
+  /// The name of the outbox table used by reactive triggers.
+  static const _outboxTableName = 'serverpod_reactive_db_call';
+
+  /// Initializes reactive triggers for all registered [ReactiveFutureCall]s.
+  ///
+  /// Creates or replaces database triggers on each watched table, then
+  /// cleans up any orphaned triggers that no longer have a registered call.
+  /// Finally, starts the reactive outbox scanner.
+  Future<void> _initializeReactiveTriggers() async {
+    final reactiveCalls = _futureCalls.entries
+        .where((e) => e.value is ReactiveFutureCall)
+        .toList();
+
+    if (reactiveCalls.isEmpty) return;
+
+    final triggerManager = _reactiveTriggerManager;
+    if (triggerManager == null) {
+      _logSession.log(
+        'Reactive future calls are registered but the database does not '
+        'support reactive triggers. Reactive calls will not be executed.',
+        level: LogLevel.warning,
+      );
+      return;
+    }
+
+    // Create or replace triggers for each reactive call.
+    final expectedTriggerNames = <String>{};
+    for (final entry in reactiveCalls) {
+      final call = entry.value as ReactiveFutureCall;
+      final triggerName =
+          '${ReactiveTriggerManager.triggerNamePrefix}${entry.key}';
+      expectedTriggerNames.add(triggerName);
+
+      try {
+        await triggerManager.createOrReplaceTrigger(
+          triggerName: triggerName,
+          tableName: call.watchTable,
+          outboxTableName: _outboxTableName,
+          futureCallName: entry.key,
+          when: call.when,
+        );
+      } catch (error, stackTrace) {
+        _diagnosticsService.submitFrameworkException(
+          error,
+          stackTrace,
+          message: 'Failed to create reactive trigger for ${entry.key}.',
+        );
+
+        stderr.writeln(
+          '${DateTime.now().toUtc()} Failed to create reactive trigger '
+          'for ${entry.key}: $error',
+        );
+      }
+    }
+
+    // Clean up orphaned triggers (those whose name no longer matches any
+    // registered reactive call).
+    try {
+      final existingTriggers =
+          await triggerManager.listReactiveTriggersWithTables();
+      for (final trigger in existingTriggers) {
+        if (!expectedTriggerNames.contains(trigger.triggerName)) {
+          await triggerManager.dropTrigger(
+            triggerName: trigger.triggerName,
+            tableName: trigger.tableName,
+          );
+        }
+      }
+    } catch (error, stackTrace) {
+      _diagnosticsService.submitFrameworkException(
+        error,
+        stackTrace,
+        message: 'Failed to clean up orphaned reactive triggers.',
+      );
+    }
+
+    // Start the reactive outbox scanner.
+    _scanner.startReactiveOutboxScanner(
+      scanInterval: _config.scanInterval,
+    );
+  }
+
+  /// Drops all reactive triggers. Called before migrations to prevent
+  /// trigger-related failures when altering tables.
+  Future<void> dropAllReactiveTriggers() async {
+    try {
+      await _reactiveTriggerManager?.dropAllReactiveTriggers();
+    } catch (error, stackTrace) {
+      _diagnosticsService.submitFrameworkException(
+        error,
+        stackTrace,
+        message: 'Failed to drop reactive triggers before migration.',
+      );
     }
   }
 }

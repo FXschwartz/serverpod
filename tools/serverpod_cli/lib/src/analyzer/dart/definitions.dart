@@ -44,6 +44,27 @@ class FutureCallDefinition {
       : null;
 }
 
+/// Describes a reactive future call that watches a database table
+/// for changes and processes batched events.
+///
+/// Reactive calls extend [FutureCallDefinition] so they can be included
+/// in the same `futureCalls` list and registered with the
+/// [FutureCallManager]. However, they do not have methods or dispatchers —
+/// the user's class IS the implementation.
+class ReactiveFutureCallDefinition extends FutureCallDefinition {
+  /// Create a new [ReactiveFutureCallDefinition].
+  const ReactiveFutureCallDefinition({
+    required super.name,
+    required super.documentationComment,
+    required super.className,
+    required super.filePath,
+    required super.annotations,
+  }) : super(
+         methods: const [],
+         isAbstract: false,
+       );
+}
+
 /// Describes a single callable method in a [FutureCallDefinition].
 final class FutureCallMethodDefinition extends MethodDefinition {
   /// The optional parameter that will be generated from other

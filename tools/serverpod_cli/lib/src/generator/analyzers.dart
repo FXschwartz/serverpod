@@ -234,7 +234,7 @@ class Analyzers {
       models: allModels,
       futureCalls: [
         ...futureCalls,
-        ...futureCallsAnalyzer.reactiveFutureCallDefinitions,
+        ..._futureCalls.reactiveFutureCallDefinitions,
       ],
     );
 

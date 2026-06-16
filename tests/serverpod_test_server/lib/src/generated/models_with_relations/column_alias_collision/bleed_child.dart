@@ -582,3 +582,13 @@ class BleedChildRepository {
     );
   }
 }
+
+abstract class BleedChildReactiveFutureCall
+    extends _i1.ReactiveFutureCall<BleedChild> {
+  @override
+  String get tableName => 'bleed_child';
+
+  _i1.WhereExpressionBuilder<BleedChildTable> get where;
+  @override
+  _i1.Expression? get condition => where(BleedChild.t);
+}

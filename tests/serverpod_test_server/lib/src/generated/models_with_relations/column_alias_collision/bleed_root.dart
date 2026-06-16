@@ -886,3 +886,13 @@ class BleedRootDetachRowRepository {
     );
   }
 }
+
+abstract class BleedRootReactiveFutureCall
+    extends _i1.ReactiveFutureCall<BleedRoot> {
+  @override
+  String get tableName => 'bleed_root';
+
+  _i1.WhereExpressionBuilder<BleedRootTable> get where;
+  @override
+  _i1.Expression? get condition => where(BleedRoot.t);
+}

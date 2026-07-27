@@ -640,3 +640,13 @@ class ObjectWithGeographyPolygonRepository {
     );
   }
 }
+
+abstract class ObjectWithGeographyPolygonReactiveFutureCall
+    extends _i1.ReactiveFutureCall<ObjectWithGeographyPolygon> {
+  @override
+  String get tableName => 'object_with_geography_polygon';
+
+  _i1.WhereExpressionBuilder<ObjectWithGeographyPolygonTable> get where;
+  @override
+  _i1.Expression? get condition => where(ObjectWithGeographyPolygon.t);
+}

@@ -649,3 +649,13 @@ class ObjectWithGeographyLineStringRepository {
     );
   }
 }
+
+abstract class ObjectWithGeographyLineStringReactiveFutureCall
+    extends _i1.ReactiveFutureCall<ObjectWithGeographyLineString> {
+  @override
+  String get tableName => 'object_with_geography_line_string';
+
+  _i1.WhereExpressionBuilder<ObjectWithGeographyLineStringTable> get where;
+  @override
+  _i1.Expression? get condition => where(ObjectWithGeographyLineString.t);
+}

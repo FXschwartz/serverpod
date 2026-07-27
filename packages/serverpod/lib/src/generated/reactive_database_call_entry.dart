@@ -130,8 +130,6 @@ abstract class ReactiveDatabaseCallEntry
     int? limit,
     int? offset,
     _i1.OrderByBuilder<ReactiveDatabaseCallEntryTable>? orderBy,
-    @Deprecated('Use desc() on the orderBy column instead.')
-    bool orderDescending = false,
     _i1.OrderByListBuilder<ReactiveDatabaseCallEntryTable>? orderByList,
     ReactiveDatabaseCallEntryInclude? include,
   }) {
@@ -140,8 +138,6 @@ abstract class ReactiveDatabaseCallEntry
       limit: limit,
       offset: offset,
       orderBy: orderBy?.call(ReactiveDatabaseCallEntry.t),
-      orderDescending: // ignore: deprecated_member_use_from_same_package
-          orderDescending,
       orderByList: orderByList?.call(ReactiveDatabaseCallEntry.t),
       include: include,
     );
@@ -316,8 +312,6 @@ class ReactiveDatabaseCallEntryIncludeList extends _i1.IncludeList {
     super.limit,
     super.offset,
     super.orderBy,
-    @Deprecated('Use desc() on the orderBy column instead.')
-    super.orderDescending,
     super.orderByList,
     super.include,
   }) {
@@ -362,8 +356,6 @@ class ReactiveDatabaseCallEntryRepository {
     int? limit,
     int? offset,
     _i1.OrderByBuilder<ReactiveDatabaseCallEntryTable>? orderBy,
-    @Deprecated('Use desc() on the orderBy column instead.')
-    bool orderDescending = false,
     _i1.OrderByListBuilder<ReactiveDatabaseCallEntryTable>? orderByList,
     _i1.Transaction? transaction,
     _i1.LockMode? lockMode,
@@ -373,8 +365,6 @@ class ReactiveDatabaseCallEntryRepository {
       where: where?.call(ReactiveDatabaseCallEntry.t),
       orderBy: orderBy?.call(ReactiveDatabaseCallEntry.t),
       orderByList: orderByList?.call(ReactiveDatabaseCallEntry.t),
-      orderDescending: // ignore: deprecated_member_use
-          orderDescending,
       limit: limit,
       offset: offset,
       transaction: transaction,
@@ -405,8 +395,6 @@ class ReactiveDatabaseCallEntryRepository {
     _i1.WhereExpressionBuilder<ReactiveDatabaseCallEntryTable>? where,
     int? offset,
     _i1.OrderByBuilder<ReactiveDatabaseCallEntryTable>? orderBy,
-    @Deprecated('Use desc() on the orderBy column instead.')
-    bool orderDescending = false,
     _i1.OrderByListBuilder<ReactiveDatabaseCallEntryTable>? orderByList,
     _i1.Transaction? transaction,
     _i1.LockMode? lockMode,
@@ -416,8 +404,6 @@ class ReactiveDatabaseCallEntryRepository {
       where: where?.call(ReactiveDatabaseCallEntry.t),
       orderBy: orderBy?.call(ReactiveDatabaseCallEntry.t),
       orderByList: orderByList?.call(ReactiveDatabaseCallEntry.t),
-      orderDescending: // ignore: deprecated_member_use
-          orderDescending,
       offset: offset,
       transaction: transaction,
       lockMode: lockMode,
@@ -451,16 +437,22 @@ class ReactiveDatabaseCallEntryRepository {
   /// If [ignoreConflicts] is set to `true`, rows that conflict with existing
   /// rows are silently skipped, and only the successfully inserted rows are
   /// returned.
+  ///
+  /// If [noReturn] is set to `true`, the inserted rows are not read back from
+  /// the database and an empty list is returned. This avoids the overhead of
+  /// transferring and deserializing the rows when the result is not needed.
   Future<List<ReactiveDatabaseCallEntry>> insert(
     _i1.DatabaseSession session,
     List<ReactiveDatabaseCallEntry> rows, {
     _i1.Transaction? transaction,
     bool ignoreConflicts = false,
+    bool noReturn = false,
   }) async {
     return session.db.insert<ReactiveDatabaseCallEntry>(
       rows,
       transaction: transaction,
       ignoreConflicts: ignoreConflicts,
+      noReturn: noReturn,
     );
   }
 
@@ -494,6 +486,10 @@ class ReactiveDatabaseCallEntryRepository {
   ///
   /// This is an atomic operation, meaning that if one of the rows fails,
   /// none of the rows will be affected.
+  ///
+  /// If [noReturn] is set to `true`, the resulting rows are not read back from
+  /// the database and an empty list is returned. This avoids the overhead of
+  /// transferring and deserializing the rows when the result is not needed.
   Future<List<ReactiveDatabaseCallEntry>> upsert(
     _i1.DatabaseSession session,
     List<ReactiveDatabaseCallEntry> rows, {
@@ -502,6 +498,7 @@ class ReactiveDatabaseCallEntryRepository {
     _i1.ColumnSelections<ReactiveDatabaseCallEntryTable>? updateColumns,
     _i1.WhereExpressionBuilder<ReactiveDatabaseCallEntryTable>? updateWhere,
     _i1.Transaction? transaction,
+    bool noReturn = false,
   }) async {
     return session.db.upsert<ReactiveDatabaseCallEntry>(
       rows,
@@ -509,6 +506,7 @@ class ReactiveDatabaseCallEntryRepository {
       updateColumns: updateColumns?.call(ReactiveDatabaseCallEntry.t),
       updateWhere: updateWhere?.call(ReactiveDatabaseCallEntry.t),
       transaction: transaction,
+      noReturn: noReturn,
     );
   }
 
@@ -548,16 +546,22 @@ class ReactiveDatabaseCallEntryRepository {
   /// all columns.
   /// This is an atomic operation, meaning that if one of the rows fails to
   /// update, none of the rows will be updated.
+  ///
+  /// If [noReturn] is set to `true`, the updated rows are not read back from
+  /// the database and an empty list is returned. This avoids the overhead of
+  /// transferring and deserializing the rows when the result is not needed.
   Future<List<ReactiveDatabaseCallEntry>> update(
     _i1.DatabaseSession session,
     List<ReactiveDatabaseCallEntry> rows, {
     _i1.ColumnSelections<ReactiveDatabaseCallEntryTable>? columns,
     _i1.Transaction? transaction,
+    bool noReturn = false,
   }) async {
     return session.db.update<ReactiveDatabaseCallEntry>(
       rows,
       columns: columns?.call(ReactiveDatabaseCallEntry.t),
       transaction: transaction,
+      noReturn: noReturn,
     );
   }
 
@@ -595,6 +599,10 @@ class ReactiveDatabaseCallEntryRepository {
 
   /// Updates all [ReactiveDatabaseCallEntry]s matching the [where] expression with the specified [columnValues].
   /// Returns the list of updated rows.
+  ///
+  /// If [noReturn] is set to `true`, the updated rows are not read back from
+  /// the database and an empty list is returned. This avoids the overhead of
+  /// transferring and deserializing the rows when the result is not needed.
   Future<List<ReactiveDatabaseCallEntry>> updateWhere(
     _i1.DatabaseSession session, {
     required _i1.ColumnValueListBuilder<ReactiveDatabaseCallEntryUpdateTable>
@@ -604,9 +612,8 @@ class ReactiveDatabaseCallEntryRepository {
     int? offset,
     _i1.OrderByBuilder<ReactiveDatabaseCallEntryTable>? orderBy,
     _i1.OrderByListBuilder<ReactiveDatabaseCallEntryTable>? orderByList,
-    @Deprecated('Use desc() on the orderBy column instead.')
-    bool orderDescending = false,
     _i1.Transaction? transaction,
+    bool noReturn = false,
   }) async {
     return session.db.updateWhere<ReactiveDatabaseCallEntry>(
       columnValues: columnValues(ReactiveDatabaseCallEntry.t.updateTable),
@@ -615,9 +622,8 @@ class ReactiveDatabaseCallEntryRepository {
       offset: offset,
       orderBy: orderBy?.call(ReactiveDatabaseCallEntry.t),
       orderByList: orderByList?.call(ReactiveDatabaseCallEntry.t),
-      orderDescending: // ignore: deprecated_member_use
-          orderDescending,
       transaction: transaction,
+      noReturn: noReturn,
     );
   }
 
@@ -628,22 +634,24 @@ class ReactiveDatabaseCallEntryRepository {
   ///
   /// This is an atomic operation, meaning that if one of the rows fail to
   /// be deleted, none of the rows will be deleted.
+  ///
+  /// If [noReturn] is set to `true`, the deleted rows are not read back from
+  /// the database and an empty list is returned. This avoids the overhead of
+  /// transferring and deserializing the rows when the result is not needed.
   Future<List<ReactiveDatabaseCallEntry>> delete(
     _i1.DatabaseSession session,
     List<ReactiveDatabaseCallEntry> rows, {
     _i1.OrderByBuilder<ReactiveDatabaseCallEntryTable>? orderBy,
-    @Deprecated('Use desc() on the orderBy column instead.')
-    bool orderDescending = false,
     _i1.OrderByListBuilder<ReactiveDatabaseCallEntryTable>? orderByList,
     _i1.Transaction? transaction,
+    bool noReturn = false,
   }) async {
     return session.db.delete<ReactiveDatabaseCallEntry>(
       rows,
       orderBy: orderBy?.call(ReactiveDatabaseCallEntry.t),
       orderByList: orderByList?.call(ReactiveDatabaseCallEntry.t),
-      orderDescending: // ignore: deprecated_member_use
-          orderDescending,
       transaction: transaction,
+      noReturn: noReturn,
     );
   }
 
@@ -663,22 +671,24 @@ class ReactiveDatabaseCallEntryRepository {
   ///
   /// To specify the order of the returned rows use [orderBy] or [orderByList]
   /// when sorting by multiple columns.
+  ///
+  /// If [noReturn] is set to `true`, the deleted rows are not read back from
+  /// the database and an empty list is returned. This avoids the overhead of
+  /// transferring and deserializing the rows when the result is not needed.
   Future<List<ReactiveDatabaseCallEntry>> deleteWhere(
     _i1.DatabaseSession session, {
     required _i1.WhereExpressionBuilder<ReactiveDatabaseCallEntryTable> where,
     _i1.OrderByBuilder<ReactiveDatabaseCallEntryTable>? orderBy,
-    @Deprecated('Use desc() on the orderBy column instead.')
-    bool orderDescending = false,
     _i1.OrderByListBuilder<ReactiveDatabaseCallEntryTable>? orderByList,
     _i1.Transaction? transaction,
+    bool noReturn = false,
   }) async {
     return session.db.deleteWhere<ReactiveDatabaseCallEntry>(
       where: where(ReactiveDatabaseCallEntry.t),
       orderBy: orderBy?.call(ReactiveDatabaseCallEntry.t),
       orderByList: orderByList?.call(ReactiveDatabaseCallEntry.t),
-      orderDescending: // ignore: deprecated_member_use
-          orderDescending,
       transaction: transaction,
+      noReturn: noReturn,
     );
   }
 

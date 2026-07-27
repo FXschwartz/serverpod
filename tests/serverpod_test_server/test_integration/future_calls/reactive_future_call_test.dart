@@ -5,7 +5,6 @@ import 'package:serverpod/serverpod.dart';
 import 'package:serverpod_database/serverpod_database.dart'
     show DatabaseProvider, DatabaseDialect, ReactiveTriggerManager;
 import 'package:serverpod_test_server/src/generated/protocol.dart';
-import 'package:serverpod_test_server/test_util/test_tags.dart';
 import 'package:test/test.dart';
 
 import '../test_tools/serverpod_test_tools.dart';
@@ -81,7 +80,6 @@ void main() {
   withServerpod(
     'Given a ReactiveFutureCall with a condition registered and started',
     rollbackDatabase: RollbackDatabase.disabled,
-    testGroupTagsOverride: [TestTags.concurrencyOneTestTag],
     (sessionBuilder, _) {
       late FutureCallManager futureCallManager;
       late Session session;
@@ -151,7 +149,6 @@ void main() {
   withServerpod(
     'Given a ReactiveFutureCall without filtering registered and started',
     rollbackDatabase: RollbackDatabase.disabled,
-    testGroupTagsOverride: [TestTags.concurrencyOneTestTag],
     (sessionBuilder, _) {
       late FutureCallManager futureCallManager;
       late Session session;
@@ -238,7 +235,6 @@ void main() {
   withServerpod(
     'Given a ReactiveFutureCall with hasChanged condition registered and started',
     rollbackDatabase: RollbackDatabase.disabled,
-    testGroupTagsOverride: [TestTags.concurrencyOneTestTag],
     (sessionBuilder, _) {
       late FutureCallManager futureCallManager;
       late Session session;
@@ -346,7 +342,6 @@ void main() {
   withServerpod(
     'Given a ReactiveFutureCall registered and started when a transaction is committed',
     rollbackDatabase: RollbackDatabase.disabled,
-    testGroupTagsOverride: [TestTags.concurrencyOneTestTag],
     (sessionBuilder, _) {
       late FutureCallManager futureCallManager;
       late Session session;
@@ -413,7 +408,6 @@ void main() {
   withServerpod(
     'Given a FutureCallManager without a reactive trigger manager',
     rollbackDatabase: RollbackDatabase.disabled,
-    testGroupTagsOverride: [TestTags.concurrencyOneTestTag],
     (sessionBuilder, _) {
       late FutureCallManager futureCallManager;
 
@@ -465,7 +459,6 @@ void main() {
   withServerpod(
     'Given two ReactiveFutureCalls registered on different tables',
     rollbackDatabase: RollbackDatabase.disabled,
-    testGroupTagsOverride: [TestTags.concurrencyOneTestTag],
     (sessionBuilder, _) {
       late FutureCallManager futureCallManager;
       late Session session;
@@ -536,7 +529,6 @@ void main() {
   withServerpod(
     'Given a FutureCallManager started without any reactive calls',
     rollbackDatabase: RollbackDatabase.disabled,
-    testGroupTagsOverride: [TestTags.concurrencyOneTestTag],
     (sessionBuilder, _) {
       late FutureCallManager futureCallManager;
       late Session session;
@@ -599,7 +591,6 @@ void main() {
     'Given a database with an orphaned reactive trigger from '
     'a previous registration',
     rollbackDatabase: RollbackDatabase.disabled,
-    testGroupTagsOverride: [TestTags.concurrencyOneTestTag],
     (sessionBuilder, _) {
       late Session session;
       late ReactiveTriggerManager triggerManager;
@@ -649,7 +640,6 @@ void main() {
   withServerpod(
     'Given a PostgresReactiveTriggerManager with registered triggers',
     rollbackDatabase: RollbackDatabase.disabled,
-    testGroupTagsOverride: [TestTags.concurrencyOneTestTag],
     (sessionBuilder, _) {
       late Session session;
       late ReactiveTriggerManager triggerManager;

@@ -38,17 +38,18 @@ import 'log_settings_override.dart' as _i24;
 import 'message_log_entry.dart' as _i25;
 import 'method_info.dart' as _i26;
 import 'query_log_entry.dart' as _i27;
-import 'readwrite_test.dart' as _i28;
-import 'runtime_settings.dart' as _i29;
-import 'server_health_connection_info.dart' as _i30;
-import 'server_health_metric.dart' as _i31;
-import 'server_health_result.dart' as _i32;
-import 'serverpod_sql_exception.dart' as _i33;
-import 'session_log_entry.dart' as _i34;
-import 'session_log_filter.dart' as _i35;
-import 'session_log_info.dart' as _i36;
-import 'session_log_result.dart' as _i37;
-import 'package:serverpod_database/src/generated/table_definition.dart' as _i38;
+import 'reactive_database_call_entry.dart' as _i28;
+import 'readwrite_test.dart' as _i29;
+import 'runtime_settings.dart' as _i30;
+import 'server_health_connection_info.dart' as _i31;
+import 'server_health_metric.dart' as _i32;
+import 'server_health_result.dart' as _i33;
+import 'serverpod_sql_exception.dart' as _i34;
+import 'session_log_entry.dart' as _i35;
+import 'session_log_filter.dart' as _i36;
+import 'session_log_info.dart' as _i37;
+import 'session_log_result.dart' as _i38;
+import 'package:serverpod_database/src/generated/table_definition.dart' as _i39;
 export 'authentication/revoked_authentication_auth_id.dart';
 export 'authentication/revoked_authentication_scope.dart';
 export 'authentication/revoked_authentication_user.dart';
@@ -73,6 +74,7 @@ export 'log_settings_override.dart';
 export 'message_log_entry.dart';
 export 'method_info.dart';
 export 'query_log_entry.dart';
+export 'reactive_database_call_entry.dart';
 export 'readwrite_test.dart';
 export 'runtime_settings.dart';
 export 'server_health_connection_info.dart';
@@ -962,6 +964,98 @@ class Protocol extends _i1.DatabaseSerializationManager {
       managed: true,
     ),
     _i2.TableDefinition(
+      name: 'serverpod_reactive_db_call',
+      dartName: 'ReactiveDatabaseCallEntry',
+      schema: 'public',
+      module: 'serverpod',
+      columns: [
+        _i2.ColumnDefinition(
+          name: 'id',
+          columnType: _i2.ColumnType.bigint,
+          isNullable: false,
+          dartType: 'int?',
+          columnDefault: 'serial',
+        ),
+        _i2.ColumnDefinition(
+          name: 'handlerName',
+          columnType: _i2.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _i2.ColumnDefinition(
+          name: 'sourceTable',
+          columnType: _i2.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _i2.ColumnDefinition(
+          name: 'operation',
+          columnType: _i2.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _i2.ColumnDefinition(
+          name: 'rowData',
+          columnType: _i2.ColumnType.text,
+          isNullable: false,
+          dartType: 'String',
+        ),
+        _i2.ColumnDefinition(
+          name: 'createdAt',
+          columnType: _i2.ColumnType.timestampWithoutTimeZone,
+          isNullable: false,
+          dartType: 'DateTime',
+        ),
+        _i2.ColumnDefinition(
+          name: 'futureCallEntryId',
+          columnType: _i2.ColumnType.bigint,
+          isNullable: true,
+          dartType: 'int?',
+        ),
+      ],
+      foreignKeys: [
+        _i2.ForeignKeyDefinition(
+          constraintName: 'serverpod_reactive_db_call_fk_0',
+          columns: ['futureCallEntryId'],
+          referenceTable: 'serverpod_future_call',
+          referenceTableSchema: 'public',
+          referenceColumns: ['id'],
+          onUpdate: _i2.ForeignKeyAction.noAction,
+          onDelete: _i2.ForeignKeyAction.cascade,
+          matchType: null,
+        ),
+      ],
+      indexes: [
+        _i2.IndexDefinition(
+          indexName: 'serverpod_reactive_db_call_created_at_idx',
+          tableSpace: null,
+          elements: [
+            _i2.IndexElementDefinition(
+              type: _i2.IndexElementDefinitionType.column,
+              definition: 'createdAt',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+        _i2.IndexDefinition(
+          indexName: 'serverpod_reactive_db_call_handler_name_idx',
+          tableSpace: null,
+          elements: [
+            _i2.IndexElementDefinition(
+              type: _i2.IndexElementDefinitionType.column,
+              definition: 'handlerName',
+            ),
+          ],
+          type: 'btree',
+          isUnique: false,
+          isPrimary: false,
+        ),
+      ],
+      managed: true,
+    ),
+    _i2.TableDefinition(
       name: 'serverpod_readwrite_test',
       dartName: 'ReadWriteTestEntry',
       schema: 'public',
@@ -1292,35 +1386,38 @@ class Protocol extends _i1.DatabaseSerializationManager {
     if (t == _i27.QueryLogEntry) {
       return _i27.QueryLogEntry.fromJson(data) as T;
     }
-    if (t == _i28.ReadWriteTestEntry) {
-      return _i28.ReadWriteTestEntry.fromJson(data) as T;
+    if (t == _i28.ReactiveDatabaseCallEntry) {
+      return _i28.ReactiveDatabaseCallEntry.fromJson(data) as T;
     }
-    if (t == _i29.RuntimeSettings) {
-      return _i29.RuntimeSettings.fromJson(data) as T;
+    if (t == _i29.ReadWriteTestEntry) {
+      return _i29.ReadWriteTestEntry.fromJson(data) as T;
     }
-    if (t == _i30.ServerHealthConnectionInfo) {
-      return _i30.ServerHealthConnectionInfo.fromJson(data) as T;
+    if (t == _i30.RuntimeSettings) {
+      return _i30.RuntimeSettings.fromJson(data) as T;
     }
-    if (t == _i31.ServerHealthMetric) {
-      return _i31.ServerHealthMetric.fromJson(data) as T;
+    if (t == _i31.ServerHealthConnectionInfo) {
+      return _i31.ServerHealthConnectionInfo.fromJson(data) as T;
     }
-    if (t == _i32.ServerHealthResult) {
-      return _i32.ServerHealthResult.fromJson(data) as T;
+    if (t == _i32.ServerHealthMetric) {
+      return _i32.ServerHealthMetric.fromJson(data) as T;
     }
-    if (t == _i33.ServerpodSqlException) {
-      return _i33.ServerpodSqlException.fromJson(data) as T;
+    if (t == _i33.ServerHealthResult) {
+      return _i33.ServerHealthResult.fromJson(data) as T;
     }
-    if (t == _i34.SessionLogEntry) {
-      return _i34.SessionLogEntry.fromJson(data) as T;
+    if (t == _i34.ServerpodSqlException) {
+      return _i34.ServerpodSqlException.fromJson(data) as T;
     }
-    if (t == _i35.SessionLogFilter) {
-      return _i35.SessionLogFilter.fromJson(data) as T;
+    if (t == _i35.SessionLogEntry) {
+      return _i35.SessionLogEntry.fromJson(data) as T;
     }
-    if (t == _i36.SessionLogInfo) {
-      return _i36.SessionLogInfo.fromJson(data) as T;
+    if (t == _i36.SessionLogFilter) {
+      return _i36.SessionLogFilter.fromJson(data) as T;
     }
-    if (t == _i37.SessionLogResult) {
-      return _i37.SessionLogResult.fromJson(data) as T;
+    if (t == _i37.SessionLogInfo) {
+      return _i37.SessionLogInfo.fromJson(data) as T;
+    }
+    if (t == _i38.SessionLogResult) {
+      return _i38.SessionLogResult.fromJson(data) as T;
     }
     if (t == _i1.getType<_i4.RevokedAuthenticationAuthId?>()) {
       return (data != null
@@ -1423,42 +1520,48 @@ class Protocol extends _i1.DatabaseSerializationManager {
     if (t == _i1.getType<_i27.QueryLogEntry?>()) {
       return (data != null ? _i27.QueryLogEntry.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i28.ReadWriteTestEntry?>()) {
-      return (data != null ? _i28.ReadWriteTestEntry.fromJson(data) : null)
-          as T;
-    }
-    if (t == _i1.getType<_i29.RuntimeSettings?>()) {
-      return (data != null ? _i29.RuntimeSettings.fromJson(data) : null) as T;
-    }
-    if (t == _i1.getType<_i30.ServerHealthConnectionInfo?>()) {
+    if (t == _i1.getType<_i28.ReactiveDatabaseCallEntry?>()) {
       return (data != null
-              ? _i30.ServerHealthConnectionInfo.fromJson(data)
+              ? _i28.ReactiveDatabaseCallEntry.fromJson(data)
               : null)
           as T;
     }
-    if (t == _i1.getType<_i31.ServerHealthMetric?>()) {
-      return (data != null ? _i31.ServerHealthMetric.fromJson(data) : null)
+    if (t == _i1.getType<_i29.ReadWriteTestEntry?>()) {
+      return (data != null ? _i29.ReadWriteTestEntry.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i32.ServerHealthResult?>()) {
-      return (data != null ? _i32.ServerHealthResult.fromJson(data) : null)
+    if (t == _i1.getType<_i30.RuntimeSettings?>()) {
+      return (data != null ? _i30.RuntimeSettings.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i31.ServerHealthConnectionInfo?>()) {
+      return (data != null
+              ? _i31.ServerHealthConnectionInfo.fromJson(data)
+              : null)
           as T;
     }
-    if (t == _i1.getType<_i33.ServerpodSqlException?>()) {
-      return (data != null ? _i33.ServerpodSqlException.fromJson(data) : null)
+    if (t == _i1.getType<_i32.ServerHealthMetric?>()) {
+      return (data != null ? _i32.ServerHealthMetric.fromJson(data) : null)
           as T;
     }
-    if (t == _i1.getType<_i34.SessionLogEntry?>()) {
-      return (data != null ? _i34.SessionLogEntry.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i33.ServerHealthResult?>()) {
+      return (data != null ? _i33.ServerHealthResult.fromJson(data) : null)
+          as T;
     }
-    if (t == _i1.getType<_i35.SessionLogFilter?>()) {
-      return (data != null ? _i35.SessionLogFilter.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i34.ServerpodSqlException?>()) {
+      return (data != null ? _i34.ServerpodSqlException.fromJson(data) : null)
+          as T;
     }
-    if (t == _i1.getType<_i36.SessionLogInfo?>()) {
-      return (data != null ? _i36.SessionLogInfo.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i35.SessionLogEntry?>()) {
+      return (data != null ? _i35.SessionLogEntry.fromJson(data) : null) as T;
     }
-    if (t == _i1.getType<_i37.SessionLogResult?>()) {
-      return (data != null ? _i37.SessionLogResult.fromJson(data) : null) as T;
+    if (t == _i1.getType<_i36.SessionLogFilter?>()) {
+      return (data != null ? _i36.SessionLogFilter.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i37.SessionLogInfo?>()) {
+      return (data != null ? _i37.SessionLogInfo.fromJson(data) : null) as T;
+    }
+    if (t == _i1.getType<_i38.SessionLogResult?>()) {
+      return (data != null ? _i38.SessionLogResult.fromJson(data) : null) as T;
     }
     if (t == List<String>) {
       return (data as List).map((e) => deserialize<String>(e)).toList() as T;
@@ -1485,15 +1588,15 @@ class Protocol extends _i1.DatabaseSerializationManager {
               .toList()
           as T;
     }
-    if (t == List<_i31.ServerHealthMetric>) {
+    if (t == List<_i32.ServerHealthMetric>) {
       return (data as List)
-              .map((e) => deserialize<_i31.ServerHealthMetric>(e))
+              .map((e) => deserialize<_i32.ServerHealthMetric>(e))
               .toList()
           as T;
     }
-    if (t == List<_i30.ServerHealthConnectionInfo>) {
+    if (t == List<_i31.ServerHealthConnectionInfo>) {
       return (data as List)
-              .map((e) => deserialize<_i30.ServerHealthConnectionInfo>(e))
+              .map((e) => deserialize<_i31.ServerHealthConnectionInfo>(e))
               .toList()
           as T;
     }
@@ -1533,15 +1636,15 @@ class Protocol extends _i1.DatabaseSerializationManager {
               : null)
           as T;
     }
-    if (t == List<_i36.SessionLogInfo>) {
+    if (t == List<_i37.SessionLogInfo>) {
       return (data as List)
-              .map((e) => deserialize<_i36.SessionLogInfo>(e))
+              .map((e) => deserialize<_i37.SessionLogInfo>(e))
               .toList()
           as T;
     }
-    if (t == List<_i38.TableDefinition>) {
+    if (t == List<_i39.TableDefinition>) {
       return (data as List)
-              .map((e) => deserialize<_i38.TableDefinition>(e))
+              .map((e) => deserialize<_i39.TableDefinition>(e))
               .toList()
           as T;
     }
@@ -1581,16 +1684,17 @@ class Protocol extends _i1.DatabaseSerializationManager {
       _i25.MessageLogEntry => 'MessageLogEntry',
       _i26.MethodInfo => 'MethodInfo',
       _i27.QueryLogEntry => 'QueryLogEntry',
-      _i28.ReadWriteTestEntry => 'ReadWriteTestEntry',
-      _i29.RuntimeSettings => 'RuntimeSettings',
-      _i30.ServerHealthConnectionInfo => 'ServerHealthConnectionInfo',
-      _i31.ServerHealthMetric => 'ServerHealthMetric',
-      _i32.ServerHealthResult => 'ServerHealthResult',
-      _i33.ServerpodSqlException => 'ServerpodSqlException',
-      _i34.SessionLogEntry => 'SessionLogEntry',
-      _i35.SessionLogFilter => 'SessionLogFilter',
-      _i36.SessionLogInfo => 'SessionLogInfo',
-      _i37.SessionLogResult => 'SessionLogResult',
+      _i28.ReactiveDatabaseCallEntry => 'ReactiveDatabaseCallEntry',
+      _i29.ReadWriteTestEntry => 'ReadWriteTestEntry',
+      _i30.RuntimeSettings => 'RuntimeSettings',
+      _i31.ServerHealthConnectionInfo => 'ServerHealthConnectionInfo',
+      _i32.ServerHealthMetric => 'ServerHealthMetric',
+      _i33.ServerHealthResult => 'ServerHealthResult',
+      _i34.ServerpodSqlException => 'ServerpodSqlException',
+      _i35.SessionLogEntry => 'SessionLogEntry',
+      _i36.SessionLogFilter => 'SessionLogFilter',
+      _i37.SessionLogInfo => 'SessionLogInfo',
+      _i38.SessionLogResult => 'SessionLogResult',
       _ => null,
     };
   }
@@ -1655,25 +1759,27 @@ class Protocol extends _i1.DatabaseSerializationManager {
         return 'MethodInfo';
       case _i27.QueryLogEntry():
         return 'QueryLogEntry';
-      case _i28.ReadWriteTestEntry():
+      case _i28.ReactiveDatabaseCallEntry():
+        return 'ReactiveDatabaseCallEntry';
+      case _i29.ReadWriteTestEntry():
         return 'ReadWriteTestEntry';
-      case _i29.RuntimeSettings():
+      case _i30.RuntimeSettings():
         return 'RuntimeSettings';
-      case _i30.ServerHealthConnectionInfo():
+      case _i31.ServerHealthConnectionInfo():
         return 'ServerHealthConnectionInfo';
-      case _i31.ServerHealthMetric():
+      case _i32.ServerHealthMetric():
         return 'ServerHealthMetric';
-      case _i32.ServerHealthResult():
+      case _i33.ServerHealthResult():
         return 'ServerHealthResult';
-      case _i33.ServerpodSqlException():
+      case _i34.ServerpodSqlException():
         return 'ServerpodSqlException';
-      case _i34.SessionLogEntry():
+      case _i35.SessionLogEntry():
         return 'SessionLogEntry';
-      case _i35.SessionLogFilter():
+      case _i36.SessionLogFilter():
         return 'SessionLogFilter';
-      case _i36.SessionLogInfo():
+      case _i37.SessionLogInfo():
         return 'SessionLogInfo';
-      case _i37.SessionLogResult():
+      case _i38.SessionLogResult():
         return 'SessionLogResult';
     }
     className = _i3.Protocol().getClassNameForObject(data);
@@ -1766,35 +1872,38 @@ class Protocol extends _i1.DatabaseSerializationManager {
     if (dataClassName == 'QueryLogEntry') {
       return deserialize<_i27.QueryLogEntry>(data['data']);
     }
+    if (dataClassName == 'ReactiveDatabaseCallEntry') {
+      return deserialize<_i28.ReactiveDatabaseCallEntry>(data['data']);
+    }
     if (dataClassName == 'ReadWriteTestEntry') {
-      return deserialize<_i28.ReadWriteTestEntry>(data['data']);
+      return deserialize<_i29.ReadWriteTestEntry>(data['data']);
     }
     if (dataClassName == 'RuntimeSettings') {
-      return deserialize<_i29.RuntimeSettings>(data['data']);
+      return deserialize<_i30.RuntimeSettings>(data['data']);
     }
     if (dataClassName == 'ServerHealthConnectionInfo') {
-      return deserialize<_i30.ServerHealthConnectionInfo>(data['data']);
+      return deserialize<_i31.ServerHealthConnectionInfo>(data['data']);
     }
     if (dataClassName == 'ServerHealthMetric') {
-      return deserialize<_i31.ServerHealthMetric>(data['data']);
+      return deserialize<_i32.ServerHealthMetric>(data['data']);
     }
     if (dataClassName == 'ServerHealthResult') {
-      return deserialize<_i32.ServerHealthResult>(data['data']);
+      return deserialize<_i33.ServerHealthResult>(data['data']);
     }
     if (dataClassName == 'ServerpodSqlException') {
-      return deserialize<_i33.ServerpodSqlException>(data['data']);
+      return deserialize<_i34.ServerpodSqlException>(data['data']);
     }
     if (dataClassName == 'SessionLogEntry') {
-      return deserialize<_i34.SessionLogEntry>(data['data']);
+      return deserialize<_i35.SessionLogEntry>(data['data']);
     }
     if (dataClassName == 'SessionLogFilter') {
-      return deserialize<_i35.SessionLogFilter>(data['data']);
+      return deserialize<_i36.SessionLogFilter>(data['data']);
     }
     if (dataClassName == 'SessionLogInfo') {
-      return deserialize<_i36.SessionLogInfo>(data['data']);
+      return deserialize<_i37.SessionLogInfo>(data['data']);
     }
     if (dataClassName == 'SessionLogResult') {
-      return deserialize<_i37.SessionLogResult>(data['data']);
+      return deserialize<_i38.SessionLogResult>(data['data']);
     }
     if (dataClassName.startsWith('serverpod_database.')) {
       data['className'] = dataClassName.substring(19);
@@ -1837,16 +1946,18 @@ class Protocol extends _i1.DatabaseSerializationManager {
         return _i26.MethodInfo.t;
       case _i27.QueryLogEntry:
         return _i27.QueryLogEntry.t;
-      case _i28.ReadWriteTestEntry:
-        return _i28.ReadWriteTestEntry.t;
-      case _i29.RuntimeSettings:
-        return _i29.RuntimeSettings.t;
-      case _i30.ServerHealthConnectionInfo:
-        return _i30.ServerHealthConnectionInfo.t;
-      case _i31.ServerHealthMetric:
-        return _i31.ServerHealthMetric.t;
-      case _i34.SessionLogEntry:
-        return _i34.SessionLogEntry.t;
+      case _i28.ReactiveDatabaseCallEntry:
+        return _i28.ReactiveDatabaseCallEntry.t;
+      case _i29.ReadWriteTestEntry:
+        return _i29.ReadWriteTestEntry.t;
+      case _i30.RuntimeSettings:
+        return _i30.RuntimeSettings.t;
+      case _i31.ServerHealthConnectionInfo:
+        return _i31.ServerHealthConnectionInfo.t;
+      case _i32.ServerHealthMetric:
+        return _i32.ServerHealthMetric.t;
+      case _i35.SessionLogEntry:
+        return _i35.SessionLogEntry.t;
     }
     return null;
   }

@@ -696,3 +696,15 @@ class ObjectWithGeographyGeometryCollectionRepository {
     );
   }
 }
+
+abstract class ObjectWithGeographyGeometryCollectionReactiveFutureCall
+    extends _i1.ReactiveFutureCall<ObjectWithGeographyGeometryCollection> {
+  @override
+  String get tableName => 'object_with_geography_geometry_collection';
+
+  _i1.WhereExpressionBuilder<ObjectWithGeographyGeometryCollectionTable>
+  get where;
+  @override
+  _i1.Expression? get condition =>
+      where(ObjectWithGeographyGeometryCollection.t);
+}

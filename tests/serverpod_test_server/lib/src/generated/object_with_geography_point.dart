@@ -642,3 +642,13 @@ class ObjectWithGeographyPointRepository {
     );
   }
 }
+
+abstract class ObjectWithGeographyPointReactiveFutureCall
+    extends _i1.ReactiveFutureCall<ObjectWithGeographyPoint> {
+  @override
+  String get tableName => 'object_with_geography_point';
+
+  _i1.WhereExpressionBuilder<ObjectWithGeographyPointTable> get where;
+  @override
+  _i1.Expression? get condition => where(ObjectWithGeographyPoint.t);
+}

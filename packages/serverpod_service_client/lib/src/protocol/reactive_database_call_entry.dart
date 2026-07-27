@@ -14,7 +14,8 @@ import 'package:serverpod_client/serverpod_client.dart' as _i1;
 
 /// An entry in the reactive future call outbox, created by database
 /// triggers when watched data changes.
-abstract class ReactiveDatabaseCallEntry implements _i1.SerializableModel {
+abstract class ReactiveDatabaseCallEntry
+    implements _i1.SerializableModel, _i1.ProtocolSerialization {
   ReactiveDatabaseCallEntry._({
     this.id,
     required this.handlerName,
@@ -89,6 +90,20 @@ abstract class ReactiveDatabaseCallEntry implements _i1.SerializableModel {
   });
   @override
   Map<String, dynamic> toJson() {
+    return {
+      '__className__': 'serverpod.ReactiveDatabaseCallEntry',
+      if (id != null) 'id': id,
+      'handlerName': handlerName,
+      'sourceTable': sourceTable,
+      'operation': operation,
+      'rowData': rowData,
+      'createdAt': createdAt.toJson(),
+      if (futureCallEntryId != null) 'futureCallEntryId': futureCallEntryId,
+    };
+  }
+
+  @override
+  Map<String, dynamic> toJsonForProtocol() {
     return {
       '__className__': 'serverpod.ReactiveDatabaseCallEntry',
       if (id != null) 'id': id,
